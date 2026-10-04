@@ -135,7 +135,7 @@ h2:first-child{margin-top:0}
 .big{display:block;width:100%;padding:12px;border-radius:4px;background:var(--accent);color:var(--on-accent);font-weight:700}
 .big:disabled{background:var(--sunk);color:var(--muted)}
 .note{font-size:12px;color:var(--muted);margin:8px 0 0}
-.quiet{margin-top:22px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:8px 0}
+.quiet{display:block;margin-top:22px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:8px 0}
 
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -151,12 +151,21 @@ h2:first-child{margin-top:0}
 .sheet strong{display:block;font-family:var(--f-display);font-weight:400;font-size:28px;margin:8px 0 16px;color:var(--accent-text);overflow-wrap:anywhere}
 .toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 72px);z-index:8;width:max-content;max-width:min(calc(100vw - 32px),480px);
   background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:4px;font-weight:600;font-size:14px;text-align:center;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.quiet + .quiet{margin-top:2px}
+.hint{flex:none;display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px 8px 8px 12px;border-radius:4px;background:var(--hz-a);color:var(--on-accent)}
+.hint div{min-width:0;flex:1}
+.hint small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.72}
+.hint p{margin:0;font-size:14px;font-weight:500;line-height:1.3}
+.hint button{flex:none;font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:10px 6px}
+@keyframes hintpulse{0%,100%{outline-color:var(--ink)}50%{outline-color:transparent}}
+.hint-target{outline:3px solid var(--ink);outline-offset:3px;animation:hintpulse 1.1s ease-in-out infinite}
+.tabs .hint-target{outline-offset:-5px}
 @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.09)}100%{transform:scale(1)}}
 .pop{animation:pop .26s ease-out}
 .rev,.lvl{transform-origin:center}
 @keyframes cele{0%{box-shadow:0 0 0 3px var(--accent),0 0 26px var(--hz-a)}100%{box-shadow:0 0 0 0 transparent,0 0 0 transparent}}
 .cele{animation:cele 1.1s ease-out}
-@media (prefers-reduced-motion: reduce){.pop,.cele{animation:none}.bar.fast .fill{animation:none}.work:not(:disabled):active,.buy:not(:disabled):active,.pay:not(:disabled):active{transform:none}}
+@media (prefers-reduced-motion: reduce){.pop,.cele,.hint-target{animation:none}.bar.fast .fill{animation:none}.work:not(:disabled):active,.buy:not(:disabled):active,.pay:not(:disabled):active{transform:none}}
 </style>
 </head>
 <body>
@@ -172,6 +181,11 @@ h2:first-child{margin-top:0}
   </header>
 
   <div class="site"><canvas id="sky" aria-label="Стройплощадка: ваши объекты, краны и техника" role="img"></canvas><div class="hazard"></div></div>
+
+  <div class="hint" id="hint" hidden>
+    <div><small id="hint-n"></small><p id="hint-t"></p></div>
+    <button type="button" id="hint-x">Скрыть</button>
+  </div>
 
   <main>
     <section id="tab-objects">
@@ -204,6 +218,7 @@ h2:first-child{margin-top:0}
       <p class="lead">Закройте трест и откройте новый, уже с именем на рынке. Объекты, руководители и технологии обнуляются, репутация остаётся навсегда. Каждое очко репутации даёт +5% к доходу.</p>
       <button type="button" class="big" id="prestige"></button>
       <p class="note" id="prestige-note"></p>
+      <button type="button" class="quiet" id="tut-on">Показать подсказки заново</button>
       <button type="button" class="quiet" id="wipe">Стереть весь прогресс</button>
     </section>
   </main>
@@ -263,8 +278,8 @@ function $(id){return document.getElementById(id)}
 function T(el,t){if(el._t!==t){el._t=t;el.textContent=t}}
 function P(el,f){var v=Math.max(0,Math.min(100,Math.floor(f*100)));if(el._pp!==v){el._pp=v;el.style.setProperty('--p',v)}}
 function fresh(rep,life){
-  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,ts:Date.now(),
-    b:B.map(function(_,i){return {lvl:i?0:1,p:0,run:false,mgr:false,up:[false,false]}})};
+  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,ts:Date.now(),
+    b:B.map(function(){return {lvl:0,p:0,run:false,mgr:false,up:[false,false]}})};
 }
 function load(d){
   var s=null;
@@ -274,10 +289,10 @@ function load(d){
   var f=fresh();
   ['money','life','rep','ts'].forEach(function(k){if(typeof s[k]==='number'&&isFinite(s[k])&&s[k]>=0)f[k]=s[k]});
   if(s.mode===1||s.mode===10||s.mode==='max')f.mode=s.mode;
-  f.mute=!!s.mute;
+  f.mute=!!s.mute;f.tut=s.tut?1:0;
   s.b.forEach(function(x,i){
     if(!x)return;var y=f.b[i];
-    y.lvl=Math.max(i?0:1,Math.floor(+x.lvl||0));y.p=Math.max(0,+x.p||0);y.run=!!x.run;y.mgr=!!x.mgr;
+    y.lvl=Math.max(0,Math.floor(+x.lvl||0));y.p=Math.max(0,+x.p||0);y.run=!!x.run;y.mgr=!!x.mgr;
     y.up=[!!(x.up&&x.up[0]),!!(x.up&&x.up[1])];
   });
   return f;
@@ -407,10 +422,12 @@ function twoStep(id,fn){
 }
 twoStep('prestige',function(){
   var t=repTotal();if(t<=S.rep)return;
-  var m=S.mode,mu=S.mute;S=fresh(t,S.life);S.mode=m;S.mute=mu;save();
+  var m=S.mode,mu=S.mute,tu=S.tut;S=fresh(t,S.life);S.mode=m;S.mute=mu;S.tut=tu;save();
   toast('Новый трест открыт. Репутация: '+t);SFX.win();
 });
 twoStep('wipe',function(){var mu=S.mute;S=fresh();S.mute=mu;save()});
+$('hint-x').addEventListener('click',function(){S.tut=1;tutor()});
+$('tut-on').addEventListener('click',function(){S.tut=0;tutShown=false;toast('Подсказки включены');tutor()});
 $('snd').addEventListener('click',function(){S.mute=!S.mute;if(!S.mute)SFX.tap()});
 $('away-ok').addEventListener('click',function(){$('away').hidden=true});
 
@@ -426,7 +443,7 @@ function render(){
       c.el.classList.toggle('locked',!own);
       T(c.lvl,own?String(s.lvl):'—');
       c.buy.disabled=p.cost>S.money;
-      T(c.buyl,own?'Нанять '+p.n+' '+plural(p.n,'бригаду','бригады','бригад'):'Открыть направление');
+      T(c.buyl,own?'Нанять '+p.n+' '+plural(p.n,'бригаду','бригады','бригад'):i?'Открыть направление':'Нанять первую бригаду');
       T(c.buyc,fmt(p.cost));P(c.buy,S.money/p.cost);
       c.auto.hidden=!(own&&s.mgr);
       if(!own){T(c.rev,'');T(c.ms,b.pitch);T(c.left,'');c.work.disabled=true;c.fill.style.transform='scaleX(0)';c.bar.classList.remove('fast');return}
@@ -765,6 +782,32 @@ var toastT=0;
 function toast(txt){var el=$('toast');el.textContent=txt;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true},2600)}
 function bump(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
 
+/* ---------- first steps ---------- */
+/* The hint is derived from the state of the game, so it can never get out of step with what the player has done. */
+var TUT_N=6,tutEl=null,tutShown=false;
+function tutStep(){
+  var b0=S.b[0],anyUp=false;
+  S.b.forEach(function(s){if(s.up[0]||s.up[1])anyUp=true});
+  if(!b0.lvl)return {n:1,t:'Наймите первую бригаду: нажмите оранжевую кнопку на карточке «Ремонт квартир».',tab:'objects',id:'buy-0'};
+  if(S.life<=0)return {n:2,t:'Нажмите на значок слева на карточке. Бригада выполнит заказ и принесёт деньги.',tab:'objects',id:'work-0'};
+  if(b0.lvl<5&&!S.b[1].lvl)return {n:3,t:'Запускайте заказы и нанимайте ещё бригады: каждая увеличивает доход. Нанято '+b0.lvl+' из 5.',tab:'objects',id:'buy-0'};
+  if(!S.b[1].lvl)return {n:4,t:'Накопите '+fmt(B[1].cost)+' ₽ и откройте гаражи. Каждое новое направление приносит больше предыдущего.',tab:'objects',id:'buy-1'};
+  if(!b0.mgr)return {n:5,t:'Накопите '+fmt(B[0].mgr[1])+' ₽ и наймите бригадира в разделе «Развитие». Он будет запускать заказы сам, даже когда игра закрыта.',tab:'grow',id:'g-mgr-0-0'};
+  if(!anyUp)return {n:6,t:'Там же, в «Развитии», купите первую технологию. Она утраивает доход направления.',tab:'grow',id:'g-up-0-0'};
+  return null;
+}
+function tutor(){
+  var st=S.tut?null:tutStep(),target=null;
+  if(!S.tut&&!st){S.tut=1;if(tutShown)toast('Обучение пройдено. На 25, 50 и 100 бригадах скорость удваивается.')}
+  $('hint').hidden=!st;
+  if(st){
+    tutShown=true;
+    T($('hint-n'),'Подсказка '+st.n+' из '+TUT_N);T($('hint-t'),st.t);
+    target=$(tab===st.tab?st.id:'t-'+st.tab);
+  }
+  if(target!==tutEl){if(tutEl)tutEl.classList.remove('hint-target');if(target)target.classList.add('hint-target');tutEl=target}
+}
+
 /* ---------- loop ---------- */
 var last=0,ticks=0;
 function frame(){
@@ -788,6 +831,7 @@ function frame(){
   }
   render();draw(now,Math.min(.05,dt));
   if(++ticks%20===0)dotCheck();
+  if(ticks%6===0)tutor();
   requestAnimationFrame(frame);
 }
 function start(data){
