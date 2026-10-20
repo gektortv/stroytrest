@@ -221,7 +221,7 @@ h2:first-child{margin-top:0}
 
     <section id="tab-grow" hidden>
       <h2>Руководители</h2>
-      <p class="lead">Руководитель сам запускает объекты один за другим. Доход идёт, даже когда игра закрыта, до 8 часов подряд.</p>
+      <p class="lead">Руководитель сам запускает объекты один за другим. Доход идёт, даже когда игра закрыта, до 6 часов подряд.</p>
       <div class="rows" id="mgrs"></div>
       <h2>Технологии</h2>
       <p class="lead">Каждая технология утраивает доход своего направления.</p>
@@ -307,14 +307,14 @@ var B=[
   mgr:['Директор по строительству',15e8],ups:[['Аутригерные этажи',45e9],['Демпфер колебаний',45e11]]}
 ];
 var MS=[25,50,100,200,300,400,500,750,1000];
-var KEY='stroytrest-v1', CAP=8*3600, REP_K=2.5e8, REP_BONUS=0.05;
+var KEY='stroytrest-v1', CAP=6*3600, REP_K=2.5e8, REP_BONUS=0.05;
 var S;
 
 function $(id){return document.getElementById(id)}
 function T(el,t){if(el._t!==t){el._t=t;el.textContent=t}}
 function P(el,f){var v=Math.max(0,Math.min(100,Math.floor(f*100)));if(el._pp!==v){el._pp=v;el.style.setProperty('--p',v)}}
 function fresh(rep,life){
-  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,theme:'auto',ts:Date.now(),
+  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,theme:'auto',hw:0,ts:Date.now(),
     b:B.map(function(){return {lvl:0,p:0,run:false,mgr:false,up:[false,false]}})};
 }
 function load(d){
@@ -323,7 +323,7 @@ function load(d){
   else{try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}}
   if(!s||!Array.isArray(s.b)||s.b.length!==B.length) return fresh();
   var f=fresh();
-  ['money','life','rep','ts'].forEach(function(k){if(typeof s[k]==='number'&&isFinite(s[k])&&s[k]>=0)f[k]=s[k]});
+  ['money','life','rep','ts','hw'].forEach(function(k){if(typeof s[k]==='number'&&isFinite(s[k])&&s[k]>=0)f[k]=s[k]});
   if(s.mode===1||s.mode===10||s.mode==='max')f.mode=s.mode;
   f.mute=!!s.mute;f.tut=s.tut?1:0;f.theme=(s.theme==='light'||s.theme==='dark')?s.theme:'auto';
   s.b.forEach(function(x,i){
@@ -333,7 +333,7 @@ function load(d){
   });
   return f;
 }
-function save(){S.ts=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){S.ts=tnow();if(S.ts>S.hw)S.hw=S.ts;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 /* ---------- numbers ---------- */
 var SUF=['',' тыс.',' млн',' млрд',' трлн',' квадрлн',' квинтлн',' секстлн',' септлн',' октлн',' нонлн',' децлн'];
@@ -539,10 +539,10 @@ function twoStep(id,fn){
 }
 twoStep('prestige',function(){
   var t=repTotal();if(t<=S.rep)return;
-  var m=S.mode,mu=S.mute,tu=S.tut,th=S.theme;S=fresh(t,S.life);S.mode=m;S.mute=mu;S.tut=tu;S.theme=th;save();
+  var m=S.mode,mu=S.mute,tu=S.tut,th=S.theme,hw=S.hw;S=fresh(t,S.life);S.mode=m;S.mute=mu;S.tut=tu;S.theme=th;S.hw=hw;save();
   toast('Новый трест открыт. Репутация: '+t);SFX.win();
 });
-twoStep('wipe',function(){var mu=S.mute,th=S.theme;S=fresh();S.mute=mu;S.theme=th;save()});
+twoStep('wipe',function(){var mu=S.mute,th=S.theme,hw=S.hw;S=fresh();S.mute=mu;S.theme=th;S.hw=hw;save()});
 ['auto','light','dark'].forEach(function(t){$('th-'+t).addEventListener('click',function(){S.theme=t;applyTheme();save()})});
 $('gift-ok').addEventListener('click',function(){$('gift').hidden=true});
 $('gift').addEventListener('click',function(e){if(e.target===$('gift'))$('gift').hidden=true});
@@ -917,20 +917,55 @@ function tutor(){
   if(target!==tutEl){if(tutEl)tutEl.classList.remove('hint-target');if(target)target.classList.add('hint-target');tutEl=target}
 }
 
-/* ---------- loop ---------- */
-var last=0,ticks=0;
-function frame(){
-  var now=Date.now(),dt=(now-last)/1000,i;last=now;
-  if(dt<0)dt=0;if(dt>CAP)dt=CAP;
-  var before=S.money;step(dt);
-  if(dt>60){
+/* ---------- time ---------- */
+/* Play time comes from the monotonic clock, so changing the phone's time does nothing while the game is open.
+   Time away is measured by the wall clock, checked against the server's clock when there is internet,
+   counted only from the latest moment the game has ever seen (S.hw), and capped at CAP. */
+var OFF=0,clockOK=false,lastPerf=0;
+function tnow(){return Date.now()+OFF}
+function syncClock(){
+  return new Promise(function(res){
+    var done=false,t0=Date.now(),fin=function(){if(!done){done=true;res()}};
+    setTimeout(fin,2500);
+    try{
+      fetch(location.href.split('#')[0],{method:'HEAD',cache:'no-store'}).then(function(r){
+        var d=Date.parse(r.headers.get('Date')||'');
+        if(!isNaN(d)){var t1=Date.now();OFF=d+500-(t0+t1)/2;if(Math.abs(OFF)<60000)OFF=0}
+        fin();
+      }).catch(fin);
+    }catch(e){fin()}
+  });
+}
+function hmin(sec){return sec<3600?Math.max(1,Math.round(sec/60))+' мин':Math.floor(sec/3600)+' ч '+Math.round(sec%3600/60)+' мин'}
+function payAway(){
+  var tn=tnow(),base=Math.max(S.hw||0,S.ts||0),away=(tn-base)/1000;
+  if(base&&away<-300)toast('Часы телефона переведены назад. Доход за отсутствие снова пойдёт, когда время догонит последний вход.');
+  if(base&&away>0){
+    var dt=Math.min(away,CAP),before=S.money,i;
+    step(dt);
     for(i=0;i<B.length;i++)acc[i]=0;
     manual=false;
-    if(S.money-before>=1){
-      T($('away-t'),'Вас не было '+(dt<3600?Math.round(dt/60)+' мин':Math.floor(dt/3600)+' ч '+Math.round(dt%3600/60)+' мин')+'. Руководители за это время сдали объектов на');
+    if(dt>60&&S.money-before>=1){
+      T($('away-t'),'Вас не было '+hmin(away)+(away>CAP?', учтены первые '+(CAP/3600)+' ч':'')+'. Руководители за это время сдали объектов на');
       T($('away-sum'),fmt(S.money-before)+' ₽');$('away').hidden=false;
     }
-  }else{
+  }
+  if(tn>(S.hw||0))S.hw=tn;
+  S.ts=tn;
+}
+function resume(){
+  clockOK=false;
+  syncClock().then(function(){payAway();lastPerf=performance.now();clockOK=true});
+}
+
+/* ---------- loop ---------- */
+var ticks=0;
+function frame(){
+  var now=Date.now(),p=performance.now(),dt=(p-lastPerf)/1000,i;lastPerf=p;
+  if(!(dt>0))dt=0;if(dt>1)dt=1;
+  if(clockOK){
+    step(dt);
+    var tn=tnow();if(tn>S.hw)S.hw=tn;
     for(i=0;i<B.length;i++)if(acc[i]>0&&now-lastPop[i]>1500){
       popup(i,acc[i]);acc[i]=0;lastPop[i]=now;
       if(S.b[i].lvl&&cyc(i)>=1)flash[i]=now;
@@ -945,16 +980,18 @@ function frame(){
   requestAnimationFrame(frame);
 }
 function start(data){
-  S=load(data);last=S.ts||Date.now();
+  S=load(data);
   applyTheme();
   P0=isDark()?.6:.12;
   sizeCanvas();
   if(window.ResizeObserver)new ResizeObserver(sizeCanvas).observe(cv);else window.addEventListener('resize',sizeCanvas);
-  setInterval(save,5000);
-  document.addEventListener('visibilitychange',function(){if(document.hidden)save()});
-  window.addEventListener('pagehide',save);
+  setInterval(function(){if(clockOK)save()},5000);
+  document.addEventListener('visibilitychange',function(){if(document.hidden){if(clockOK)save();clockOK=false}else resume()});
+  window.addEventListener('pagehide',function(){if(clockOK)save()});
   var hot=window.claude&&window.claude.hot;
-  if(hot&&hot.snapshot)hot.snapshot(function(){S.ts=Date.now();return S});
+  if(hot&&hot.snapshot)hot.snapshot(function(){S.ts=tnow();return S});
+  lastPerf=performance.now();
+  resume();
   requestAnimationFrame(frame);
 }
 var hot0=window.claude&&window.claude.hot;
