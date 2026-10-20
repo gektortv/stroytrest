@@ -182,6 +182,24 @@ h2:first-child{margin-top:0}
 @keyframes artbob{0%{transform:translateY(8px) scale(.94)}60%{transform:translateY(-3px) scale(1.02)}100%{transform:none}}
 .gift{animation:giftin .34s cubic-bezier(.2,1.35,.4,1)}
 .gift .art{animation:artbob .6s .1s ease-out both}
+.qrow .pay{min-width:96px;text-align:center}
+.qrow .pay > span{display:block}
+.qn{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text);margin-bottom:2px}
+.row.done .row-t{opacity:.6}
+.boost{display:inline-block;margin-left:4px;padding:1px 5px;border-radius:3px;background:var(--hz-a);color:var(--on-accent);letter-spacing:0;text-transform:none;font-weight:700}
+.tabs button{font-size:13px}
+.cpick{max-height:calc(100% - 8px);overflow-y:auto;text-align:left}
+.cpick h2,.cpick > p{text-align:center}
+.clist{display:flex;flex-direction:column;gap:8px;margin:12px 0 14px}
+.copt,.cnow{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);text-align:left}
+.copt[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.flag{flex:none;width:36px;height:24px;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.flag svg{display:block;width:100%;height:100%}
+.ct{min-width:0}
+.ct b{display:block;font-weight:700}
+.ct small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+.cnow{background:var(--surface)}
+.cpick .quiet{margin:10px auto 0}
 @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.09)}100%{transform:scale(1)}}
 .pop{animation:pop .26s ease-out}
 .rev,.lvl{transform-origin:center}
@@ -197,7 +215,7 @@ h2:first-child{margin-top:0}
   <header class="top">
     <div class="cash"><small>На счёте</small><output id="money">0 ₽</output></div>
     <div class="side">
-      <div class="rate"><small>Доход</small><output id="rate">0 ₽/с</output></div>
+      <div class="rate"><small>Доход <b class="boost" id="boost" hidden></b></small><output id="rate">0 ₽/с</output></div>
       <button type="button" class="snd" id="snd" aria-pressed="true" aria-label="Звук"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h3l4-4v14l-4-4H4z"/><path class="on" d="M15 9.5c1 1.5 1 3.5 0 5M17.5 7c2.3 3 2.3 7 0 10"/><path class="off" d="M15.5 9.5l5 5M20.5 9.5l-5 5"/></svg></button>
     </div>
   </header>
@@ -221,11 +239,30 @@ h2:first-child{margin-top:0}
 
     <section id="tab-grow" hidden>
       <h2>Руководители</h2>
-      <p class="lead">Руководитель сам запускает объекты один за другим. Доход идёт, даже когда игра закрыта, до 6 часов подряд.</p>
+      <p class="lead">Руководитель сам запускает объекты один за другим. Доход идёт, даже когда игра закрыта, до 3 часов подряд.</p>
       <div class="rows" id="mgrs"></div>
       <h2>Технологии</h2>
       <p class="lead">Каждая технология утраивает доход своего направления.</p>
       <div class="rows" id="techs"></div>
+    </section>
+
+    <section id="tab-quests" hidden>
+      <h2>Контракты</h2>
+      <p class="lead">Заказы идут по цепочке: выполните текущий, заберите награду и получите следующий.</p>
+      <div class="rows">
+        <div class="row qrow" id="qm-row">
+          <div class="row-t"><small class="qn" id="qm-n"></small><b id="qm-t"></b><span id="qm-r"></span></div>
+          <button type="button" class="pay" id="qm-btn"><span id="qm-l"></span></button>
+        </div>
+      </div>
+      <h2>Задания на сегодня</h2>
+      <p class="lead">Три задания на каждый день. Награда растёт вместе с доходом треста.</p>
+      <div class="rows">
+        <div class="row qrow" id="qd-0"><div class="row-t"><b id="qd-t-0"></b><span id="qd-r-0"></span></div><button type="button" class="pay" id="qd-btn-0"><span id="qd-l-0"></span></button></div>
+        <div class="row qrow" id="qd-1"><div class="row-t"><b id="qd-t-1"></b><span id="qd-r-1"></span></div><button type="button" class="pay" id="qd-btn-1"><span id="qd-l-1"></span></button></div>
+        <div class="row qrow" id="qd-2"><div class="row-t"><b id="qd-t-2"></b><span id="qd-r-2"></span></div><button type="button" class="pay" id="qd-btn-2"><span id="qd-l-2"></span></button></div>
+      </div>
+      <p class="note" id="qd-reset"></p>
     </section>
 
     <section id="tab-trust" hidden>
@@ -240,8 +277,10 @@ h2:first-child{margin-top:0}
       <div class="seg theme-seg" role="group" aria-label="Тема оформления">
         <button type="button" id="th-auto">Как в системе</button><button type="button" id="th-light">Светлая</button><button type="button" id="th-dark">Тёмная</button>
       </div>
+      <h2>Страна</h2>
+      <div class="cnow" id="cnow"></div>
       <h2>Новый трест</h2>
-      <p class="lead">Закройте трест и откройте новый, уже с именем на рынке. Объекты, руководители и технологии обнуляются, репутация остаётся навсегда. Каждое очко репутации даёт +5% к доходу.</p>
+      <p class="lead">Закройте трест и откройте новый, уже с именем на рынке, в одной из пяти стран: Россия, Дубай, Китай, Турция или Сингапур. Объекты, руководители и технологии обнуляются, репутация остаётся навсегда. Каждое очко репутации даёт +5% к доходу.</p>
       <button type="button" class="big" id="prestige"></button>
       <p class="note" id="prestige-note"></p>
       <button type="button" class="quiet" id="tut-on">Показать подсказки заново</button>
@@ -253,10 +292,21 @@ h2:first-child{margin-top:0}
 <nav class="tabs" aria-label="Разделы"><div role="tablist">
   <button type="button" role="tab" data-tab="objects" id="t-objects" aria-selected="true">Объекты</button>
   <button type="button" role="tab" data-tab="grow" id="t-grow" aria-selected="false">Развитие<i id="dot" hidden></i></button>
+  <button type="button" role="tab" data-tab="quests" id="t-quests" aria-selected="false">Задания<i id="qdot" hidden></i></button>
   <button type="button" role="tab" data-tab="trust" id="t-trust" aria-selected="false">Трест</button>
 </div></nav>
 
 <div class="toast" id="toast" role="status" hidden></div>
+
+<div class="veil" id="cpick" hidden role="dialog" aria-modal="true" aria-labelledby="cpick-h">
+  <div class="sheet cpick">
+    <h2 id="cpick-h">Где откроем новый трест?</h2>
+    <p>У каждой страны свой город на горизонте и свой бонус.</p>
+    <div class="clist" id="clist"></div>
+    <button type="button" class="big" id="cpick-go"></button>
+    <button type="button" class="quiet" id="cpick-x">Отмена</button>
+  </div>
+</div>
 
 <div class="veil" id="gift" hidden role="dialog" aria-modal="true" aria-labelledby="gift-t">
   <div class="sheet gift">
@@ -307,14 +357,14 @@ var B=[
   mgr:['Директор по строительству',15e8],ups:[['Аутригерные этажи',45e9],['Демпфер колебаний',45e11]]}
 ];
 var MS=[25,50,100,200,300,400,500,750,1000];
-var KEY='stroytrest-v1', CAP=6*3600, REP_K=2.5e8, REP_BONUS=0.05;
+var KEY='stroytrest-v1', CAP=3*3600, REP_K=2.5e8, REP_BONUS=0.05;
 var S;
 
 function $(id){return document.getElementById(id)}
 function T(el,t){if(el._t!==t){el._t=t;el.textContent=t}}
 function P(el,f){var v=Math.max(0,Math.min(100,Math.floor(f*100)));if(el._pp!==v){el._pp=v;el.style.setProperty('--p',v)}}
 function fresh(rep,life){
-  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,theme:'auto',hw:0,ts:Date.now(),
+  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,theme:'auto',country:'ru',hw:0,q:0,boost:0,st:{hired:0,manual:0,buys:0,ms:0},day:null,ts:Date.now(),
     b:B.map(function(){return {lvl:0,p:0,run:false,mgr:false,up:[false,false]}})};
 }
 function load(d){
@@ -325,6 +375,10 @@ function load(d){
   var f=fresh();
   ['money','life','rep','ts','hw'].forEach(function(k){if(typeof s[k]==='number'&&isFinite(s[k])&&s[k]>=0)f[k]=s[k]});
   if(s.mode===1||s.mode===10||s.mode==='max')f.mode=s.mode;
+  if(s.q>=0)f.q=Math.floor(s.q);if(s.boost>0)f.boost=+s.boost;
+  if(s.st)['hired','manual','buys','ms'].forEach(function(k){if(s.st[k]>=0)f.st[k]=+s.st[k]});
+  if(s.day&&s.day.key&&s.day.base&&Array.isArray(s.day.tasks))f.day=s.day;
+  f.country=CTRY[s.country]?s.country:'ru';
   f.mute=!!s.mute;f.tut=s.tut?1:0;f.theme=(s.theme==='light'||s.theme==='dark')?s.theme:'auto';
   s.b.forEach(function(x,i){
     if(!x)return;var y=f.b[i];
@@ -358,10 +412,12 @@ function tfmt(s){
 
 /* ---------- rules ---------- */
 function speed(i){var l=S.b[i].lvl,n=0;for(var k=0;k<MS.length;k++)if(l>=MS[k])n++;return Math.pow(2,n)}
-function cyc(i){return B[i].t/speed(i)}
+function cyc(i){return B[i].t/speed(i)/cspd()}
 function upm(i){var u=S.b[i].up;return (u[0]?3:1)*(u[1]?3:1)}
 function repm(){return 1+S.rep*REP_BONUS}
-function rev(i){return B[i].rev*S.b[i].lvl*upm(i)*repm()}
+var OFFCALC=false;
+function bm(){return S.boost>0&&!OFFCALC?2:1}
+function rev(i){return B[i].rev*S.b[i].lvl*upm(i)*repm()*bm()*cmul(i)}
 function rate(){var r=0;B.forEach(function(_,i){var s=S.b[i];if(s.lvl&&s.mgr)r+=rev(i)/cyc(i)});return r}
 function earn(x){S.money+=x;S.life+=x}
 function costN(i,n){var b=B[i];return b.cost*Math.pow(b.g,S.b[i].lvl)*(Math.pow(b.g,n)-1)/(b.g-1)}
@@ -382,7 +438,7 @@ function step(dt){
     var c=cyc(i);s.p+=dt;
     if(s.p>=c){
       var n=s.mgr?Math.floor(s.p/c):1;
-      var e=n*rev(i);earn(e);acc[i]+=e;if(!s.mgr)manual=true;
+      var e=n*rev(i);earn(e);acc[i]+=e;if(!s.mgr){manual=true;S.st.manual+=n}
       s.p=s.mgr?s.p-n*c:0;s.run=s.mgr;
     }
   }
@@ -489,10 +545,11 @@ B.forEach(function(b,i){
   c.buy.addEventListener('click',function(){
     var p=plan(i);if(p.cost>S.money)return;
     var was=S.b[i].lvl,sp0=speed(i);
-    S.money-=p.cost;S.b[i].lvl+=p.n;
+    S.money-=p.cost;S.b[i].lvl+=p.n;S.st.hired+=p.n;
     bump(c.buy,'pop');bump(c.lvl,'pop');
     if(!was){celebrate(i);bump(c.el,'cele');toast('Открыто направление: '+b.name);SFX.win()}
     else if(speed(i)>sp0){
+      S.st.ms+=Math.round(Math.log(speed(i)/sp0)/Math.LN2);
       celebrate(i);bump(c.el,'cele');SFX.win();
       toast(b.name+': '+S.b[i].lvl+' '+plural(S.b[i].lvl,'бригада','бригады','бригад')+', скорость ×'+(speed(i)/sp0));
     }else SFX.buy();
@@ -506,8 +563,8 @@ function addRow(parent,title,desc,cost,kind,i,k){
   parent.appendChild(el);
   var g={el:el,btn:el.lastElementChild,kind:kind,i:i,k:k,cost:cost};g.lbl=g.btn.firstElementChild;
   g.btn.addEventListener('click',function(){
-    var s=S.b[i];if(!s.lvl||bought(g)||S.money<cost)return;
-    S.money-=cost;
+    var s=S.b[i];if(!s.lvl||bought(g)||S.money<gcost(g))return;
+    S.money-=gcost(g);S.st.buys++;
     if(kind==='mgr'){s.mgr=true;s.run=true}else s.up[k]=true;
     bump(g.btn,'pop');SFX.hire();showGift(kind,i,k,title);
   });
@@ -519,10 +576,10 @@ B.forEach(function(b,i){b.ups.forEach(function(u,k){addRow($('techs'),u[0],'Ут
 
 /* ---------- tabs, controls ---------- */
 var tab='objects';
-['objects','grow','trust'].forEach(function(t){
+['objects','grow','quests','trust'].forEach(function(t){
   $('t-'+t).addEventListener('click',function(){
     tab=t;
-    ['objects','grow','trust'].forEach(function(x){$('tab-'+x).hidden=x!==t;$('t-'+x).setAttribute('aria-selected',String(x===t))});
+    ['objects','grow','quests','trust'].forEach(function(x){$('tab-'+x).hidden=x!==t;$('t-'+x).setAttribute('aria-selected',String(x===t))});
     document.querySelector('main').scrollTop=0;
   });
 });
@@ -537,14 +594,15 @@ function twoStep(id,fn){
     armed[id]=setTimeout(function(){armed[id]=0},4000);
   });
 }
-twoStep('prestige',function(){
-  var t=repTotal();if(t<=S.rep)return;
-  var m=S.mode,mu=S.mute,tu=S.tut,th=S.theme,hw=S.hw;S=fresh(t,S.life);S.mode=m;S.mute=mu;S.tut=tu;S.theme=th;S.hw=hw;save();
-  toast('Новый трест открыт. Репутация: '+t);SFX.win();
-});
-twoStep('wipe',function(){var mu=S.mute,th=S.theme,hw=S.hw;S=fresh();S.mute=mu;S.theme=th;S.hw=hw;save()});
+$('prestige').addEventListener('click',openCountryPick);
+$('cpick-go').addEventListener('click',doPrestige);
+$('cpick-x').addEventListener('click',function(){$('cpick').hidden=true});
+$('cpick').addEventListener('click',function(e){if(e.target===$('cpick'))$('cpick').hidden=true});
+twoStep('wipe',function(){var mu=S.mute,th=S.theme,hw=S.hw;S=fresh();S.mute=mu;S.theme=th;S.hw=hw;rollDay();save()});
 ['auto','light','dark'].forEach(function(t){$('th-'+t).addEventListener('click',function(){S.theme=t;applyTheme();save()})});
 $('gift-ok').addEventListener('click',function(){$('gift').hidden=true});
+$('qm-btn').addEventListener('click',claimQuest);
+[0,1,2].forEach(function(j){$('qd-btn-'+j).addEventListener('click',function(){claimDaily(j)})});
 $('gift').addEventListener('click',function(e){if(e.target===$('gift'))$('gift').hidden=true});
 $('hint-x').addEventListener('click',function(){S.tut=1;tutor()});
 $('tut-on').addEventListener('click',function(){S.tut=0;tutShown=false;toast('Подсказки включены');tutor()});
@@ -555,6 +613,7 @@ $('away-ok').addEventListener('click',function(){$('away').hidden=true});
 var moneyEl=$('money'),rateEl=$('rate'),sndEl=$('snd');
 function render(){
   T(moneyEl,fmt(S.money)+' ₽');T(rateEl,fmt(rate())+' ₽/с');
+  $('boost').hidden=!(S.boost>0);if(S.boost>0)T($('boost'),'×2 · '+tfmt(S.boost));
   if(sndEl._p!==S.mute){sndEl._p=S.mute;sndEl.setAttribute('aria-pressed',String(!S.mute))}
   if(tab==='objects'){
     ['1','10','max'].forEach(function(m){$('mode-'+m).setAttribute('aria-pressed',String(String(S.mode)===m))});
@@ -580,28 +639,32 @@ function render(){
     G.forEach(function(g){
       var own=S.b[g.i].lvl>0,done=bought(g);
       g.el.classList.toggle('done',done);g.el.classList.toggle('dim',!own&&!done);
-      g.btn.disabled=done||!own||S.money<g.cost;
+      g.btn.disabled=done||!own||S.money<gcost(g);
       g.lbl.classList.toggle('coin',!done);
-      T(g.lbl,done?(g.kind==='mgr'?'✓ Нанят':'✓ Внедрено'):fmt(g.cost));
-      P(g.btn,done||!own?0:S.money/g.cost);
+      T(g.lbl,done?(g.kind==='mgr'?'✓ Нанят':'✓ Внедрено'):fmt(gcost(g)));
+      P(g.btn,done||!own?0:S.money/gcost(g));
     });
+  }else if(tab==='quests'){
+    if(S.day)renderQuests();
   }else{
     var tot=repTotal(),gain=Math.max(0,tot-S.rep),crews=0;
     S.b.forEach(function(s){crews+=s.lvl});
     T($('st-life'),fmt(S.life)+' ₽');T($('st-rep'),String(S.rep));
     T($('st-bonus'),'+'+Math.round(S.rep*REP_BONUS*100)+'%');T($('st-crews'),String(crews));
     var pb=$('prestige');pb.disabled=gain<1;
-    T(pb,armed.prestige?'Нажмите ещё раз, чтобы закрыть трест':gain<1?'Пока рано':'Открыть новый трест: +'+gain+' к репутации');
+    T(pb,gain<1?'Пока рано':'Открыть новый трест: +'+gain+' к репутации');
     var need=REP_K*Math.pow(tot+1,2)-S.life;
     T($('prestige-note'),'До следующего очка репутации осталось заработать '+fmt(Math.max(0,need))+' ₽.');
     ['auto','light','dark'].forEach(function(t){var b=$('th-'+t),v=String(S.theme===t);if(b._p!==v){b._p=v;b.setAttribute('aria-pressed',v)}});
+    var cc=CC();if($('cnow')._k!==S.country){$('cnow')._k=S.country;$('cnow').innerHTML='<span class="flag">'+flagSvg(S.country)+'</span><span class="ct"><b>'+cc.name+', '+cc.sub+'</b><small>Бонус: '+cc.txt+'</small></span>'}
     T($('wipe'),armed.wipe?'Нажмите ещё раз: прогресс исчезнет навсегда':'Стереть весь прогресс');
   }
 }
 function dotCheck(){
   var any=false;
-  for(var j=0;j<G.length;j++){var g=G[j];if(S.b[g.i].lvl&&!bought(g)&&S.money>=g.cost){any=true;break}}
+  for(var j=0;j<G.length;j++){var g=G[j];if(S.b[g.i].lvl&&!bought(g)&&S.money>=gcost(g)){any=true;break}}
   $('dot').hidden=!any;
+  if(S.day)$('qdot').hidden=!questReady();
 }
 
 /* ---------- scene ---------- */
@@ -729,8 +792,8 @@ function draw(now,fdt){
   var t=RM?0:(now-T0)/1000,p=(P0+t/150)%1,k,i;
   var n=p<.46?0:p<.54?(p-.46)/.08:p<.92?1:(1-p)/.08,d=1-Math.abs(n-.5)*2;
   setNight(n);
-  var top=lerp3(lerp3(rgb('#6dbbe8'),rgb('#0a1230'),n),rgb('#5a6fb0'),d*.5);
-  var bot=lerp3(lerp3(rgb('#d6effb'),rgb('#24406a'),n),rgb('#f7b267'),d*.85);
+  var top=lerp3(lerp3(rgb(CC().sky[0]),rgb('#0a1230'),n),rgb('#5a6fb0'),d*.5);
+  var bot=lerp3(lerp3(rgb(CC().sky[1]),rgb('#24406a'),n),rgb('#f7b267'),d*.85);
   var g=cx.createLinearGradient(0,0,0,CH);g.addColorStop(0,css(top));g.addColorStop(1,css(bot));
   cx.fillStyle=g;cx.fillRect(0,0,CW,CH);
   var gy=CH-GROUND;
@@ -756,6 +819,7 @@ function draw(now,fdt){
     cx.beginPath();cx.ellipse(cxx,cyy,14*cs,5*cs,0,0,6.2832);cx.ellipse(cxx-8*cs,cyy+2*cs,9*cs,4*cs,0,0,6.2832);cx.ellipse(cxx+9*cs,cyy+2*cs,10*cs,4*cs,0,0,6.2832);cx.fill();
   }
   cx.globalAlpha=1;
+  BOTA=bot;TOPA=top;HY=CH;backdrop(gy);
 
   for(var oi=0;oi<ORDER.length;oi++){
     i=ORDER[oi];
@@ -780,7 +844,7 @@ function draw(now,fdt){
     if(fa>0&&!RM)R('rgba(255,255,255,'+(fa*.7).toFixed(2)+')',o.x,gy-HT[i],o.w,HT[i]);
   }
 
-  R(K('#aeb8bb'),0,gy,CW,3);R(K('#474f55'),0,gy+3,CW,GROUND-3);
+  R(K(CC().walk),0,gy,CW,3);R(K('#474f55'),0,gy+3,CW,GROUND-3);
   for(k=4;k<CW;k+=16)R(K('#e8dfb8'),k,gy+8,8,1);
   if(!RM)for(k=0;k<2;k++)truck(((t*26+k*210)%(CW+70))-35,gy+GROUND-1,now);
   drawWorkers(gy,fdt);
@@ -832,6 +896,265 @@ var SFX={
 var toastT=0;
 function toast(txt){var el=$('toast');el.textContent=txt;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true},2600)}
 function bump(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+
+/* ---------- countries ---------- */
+/* Where the trust builds. Chosen when a new trust opens; each has its own skyline, sky and a small bonus. */
+var CTRY={
+ ru:{name:'Россия',sub:'Москва',bonus:[0,4],txt:'Ремонт квартир и пятиэтажки ×2',sky:['#6dbbe8','#d6effb'],walk:'#aeb8bb'},
+ ae:{name:'Дубай',sub:'ОАЭ',bonus:[5,7],txt:'Высотки и небоскрёбы ×2',sky:['#78b6e0','#f3e1bf'],walk:'#d4c29c'},
+ cn:{name:'Китай',sub:'Шанхай',bonus:[],spd:1.5,txt:'Все стройки идут в 1,5 раза быстрее',sky:['#84b2d4','#e1e8ea'],walk:'#aeb8bb'},
+ tr:{name:'Турция',sub:'Стамбул',bonus:[2,3],txt:'Коттеджи и таунхаусы ×2',sky:['#5aaee6','#ddeff7'],walk:'#b9b4aa'},
+ sg:{name:'Сингапур',sub:'Марина-Бэй',bonus:[6],tech:.5,txt:'Торговые центры ×2, технологии вдвое дешевле',sky:['#4eaee6','#d6f0ef'],walk:'#aeb8bb'}
+};
+var CORDER=['ru','ae','cn','tr','sg'];
+function CC(){return CTRY[S.country]||CTRY.ru}
+function cmul(i){return CC().bonus.indexOf(i)>=0?2:1}
+function cspd(){return CC().spd||1}
+function gcost(g){return g.cost*(g.kind==='up'?(CC().tech||1):1)}
+
+function starPts(cx0,cy0,r,rot){var p=[];for(var k=0;k<10;k++){var a=rot+k*Math.PI/5,rr=k%2?r*.42:r;p.push((cx0+Math.sin(a)*rr).toFixed(2)+','+(cy0-Math.cos(a)*rr).toFixed(2))}return p.join(' ')}
+var FLAG={
+ ru:'<rect width="30" height="20" fill="#d52b1e"/><rect width="30" height="13.33" fill="#1c57a5"/><rect width="30" height="6.67" fill="#ffffff"/>',
+ ae:'<rect width="30" height="20" fill="#000000"/><rect width="30" height="13.33" fill="#ffffff"/><rect width="30" height="6.67" fill="#00732f"/><rect width="8" height="20" fill="#ce1126"/>',
+ cn:'<rect width="30" height="20" fill="#de2910"/><polygon fill="#ffde00" points="'+starPts(5,5,3,0)+'"/><polygon fill="#ffde00" points="'+starPts(10,2,1,.6)+'"/><polygon fill="#ffde00" points="'+starPts(12,4,1,.9)+'"/><polygon fill="#ffde00" points="'+starPts(12,7,1,0)+'"/><polygon fill="#ffde00" points="'+starPts(10,9,1,.6)+'"/>',
+ tr:'<rect width="30" height="20" fill="#e30a17"/><circle cx="11" cy="10" r="5" fill="#ffffff"/><circle cx="12.3" cy="10" r="4" fill="#e30a17"/><polygon fill="#ffffff" points="'+starPts(16.6,10,1.9,-1.57)+'"/>',
+ sg:'<rect width="30" height="20" fill="#ffffff"/><rect width="30" height="10" fill="#ef3340"/><circle cx="6.5" cy="5" r="3.5" fill="#ffffff"/><circle cx="8" cy="5" r="3.5" fill="#ef3340"/>'+
+   [[10.6,2.6],[12.3,4],[11.6,6.1],[9.6,6.1],[8.9,4]].map(function(p){return '<polygon fill="#ffffff" points="'+starPts(p[0]+.6,p[1]+.2,.75,0)+'"/>'}).join('')
+};
+function flagSvg(k){return '<svg viewBox="0 0 30 20" aria-hidden="true">'+FLAG[k]+'</svg>'}
+
+/* ---- skyline backdrops, drawn hazy behind the buildings ---- */
+var BOTA=[214,239,251],TOPA=[109,187,232],HY=200;
+function hz(hex,a){var c=lerp3(rgb(hex),[10,20,40],NIGHT*.72);return css(lerp3(c,BOTA,a==null?.38:a))}
+function rc(c,x,y,w,h){cx.fillStyle=c;cx.fillRect(x,y,w,h)}
+function pg(c,p){cx.fillStyle=c;cx.beginPath();cx.moveTo(p[0],p[1]);for(var k=2;k<p.length;k+=2)cx.lineTo(p[k],p[k+1]);cx.closePath();cx.fill()}
+function ci(c,x,y,r){cx.fillStyle=c;cx.beginPath();cx.arc(x,y,r,0,6.2832);cx.fill()}
+function ln(c,w,x1,y1,x2,y2){cx.strokeStyle=c;cx.lineWidth=w;cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke()}
+function lights(x,y,w,h,seed){
+  if(NIGHT<.3)return;
+  cx.globalAlpha=Math.min(1,NIGHT)*.85;cx.fillStyle='#ffd57a';
+  for(var yy=y+3;yy<y+h-2;yy+=4)for(var xx=x+2;xx<x+w-1.5;xx+=3)if(hash(seed,Math.round(xx*3),Math.round(yy*3))<.3)cx.fillRect(xx,yy,1,1.2);
+  cx.globalAlpha=1;
+}
+function tower(c,x,gy,w,h,seed,lit){rc(hz(c),x,gy-h,w,h);rc(hz(lit||'#dfe8ef',.5),x+w*.6,gy-h,w*.4,h);lights(x,gy-h,w,h,seed)}
+function onion(c,x,y,r){cx.fillStyle=c;cx.beginPath();cx.moveTo(x-r,y);cx.bezierCurveTo(x-r*1.5,y-r*1.3,x-r*.2,y-r*1.7,x,y-r*2.7);cx.bezierCurveTo(x+r*.2,y-r*1.7,x+r*1.5,y-r*1.3,x+r,y);cx.closePath();cx.fill()}
+function dome(c,x,y,r,flat){cx.fillStyle=c;cx.beginPath();cx.ellipse(x,y,r,r*(flat||1),0,Math.PI,0);cx.closePath();cx.fill();cx.fillRect(x-.6,y-r*(flat||1)-5,1.2,5)}
+function minaret(c,x,gy,h){rc(c,x-1.4,gy-h,2.8,h);rc(c,x-2.4,gy-h*.72,4.8,1.6);pg(c,[x-1.8,gy-h,x+1.8,gy-h,x,gy-h-9])}
+function palm(x,gy,h){
+  cx.strokeStyle=hz('#8a6a45',.3);cx.lineWidth=2;cx.beginPath();cx.moveTo(x,gy);cx.quadraticCurveTo(x+4,gy-h/2,x+1,gy-h);cx.stroke();
+  cx.fillStyle=hz('#3e8f4e',.3);
+  for(var a=0;a<7;a++){var an=a/7*Math.PI*2;cx.beginPath();cx.ellipse(x+1+Math.cos(an)*6,gy-h+Math.sin(an)*2.4+1.5,7,1.8,an,0,6.2832);cx.fill()}
+}
+function cypress(x,gy,h){cx.fillStyle=hz('#2f5d3a',.3);cx.beginPath();cx.ellipse(x,gy-h/2,3.3,h/2,0,0,6.2832);cx.fill()}
+function birch(x,gy,h){rc(hz('#e8e4dc',.3),x-.8,gy-h,1.6,h);cx.fillStyle=hz('#6aa84f',.3);cx.beginPath();cx.ellipse(x,gy-h+3,6,9,0,0,6.2832);cx.fill()}
+
+var BACKDROP={
+ ru:function(gy,W){
+   [[-20,118,14,'#7fa6c8'],[-4,150,15,'#6f97bd'],[13,128,13,'#86aecd'],[27,100,12,'#7b9fc0']].forEach(function(t,k){tower(t[3],W*.8+t[0],gy,t[2],t[1],50+k,'#b9d3e8')});
+   var sx=W*.56,c='#cdb99c';
+   rc(hz(c),sx-40,gy-26,14,26);rc(hz(c),sx+26,gy-26,14,26);
+   rc(hz(c),sx-26,gy-40,52,40);rc(hz(c),sx-16,gy-70,32,30);rc(hz(c),sx-10,gy-94,20,24);rc(hz(c),sx-6,gy-108,12,14);
+   pg(hz(c),[sx-6,gy-108,sx+6,gy-108,sx,gy-122]);rc(hz('#c9a24a'),sx-.8,gy-142,1.6,22);ci(hz('#d4af37',.2),sx,gy-143,2.2);
+   lights(sx-26,gy-40,52,40,61);lights(sx-16,gy-70,32,30,62);lights(sx-10,gy-94,20,24,63);
+   var red='#b8463a',kx=W*.04,kw=W*.36;
+   rc(hz(red),kx,gy-12,kw,12);for(var x=kx;x<kx+kw;x+=4)rc(hz(red),x,gy-15,2.2,3);
+   var tx=W*.17;
+   rc(hz(red),tx-6,gy-36,12,36);rc(hz('#efe6d6'),tx-3,gy-32,6,6);rc(hz(red),tx-4.5,gy-46,9,10);rc(hz('#efe6d6'),tx-4.5,gy-43,9,2);
+   pg(hz('#3f6b4f'),[tx-4.5,gy-46,tx+4.5,gy-46,tx,gy-64]);ci(hz('#e0242c',.15),tx,gy-66,2.2);
+   var bx=W*.43;
+   [[0,32,7,'#c0392b'],[-9,23,5,'#2e8b57'],[9,23,5,'#e1b12c'],[-16,17,4,'#2f6fb3'],[16,17,4,'#16a085']].forEach(function(d){
+     rc(hz('#c46a4a'),bx+d[0]-d[2]*.6,gy-d[1],d[2]*1.2,d[1]);onion(hz(d[3],.3),bx+d[0],gy-d[1],d[2]);
+   });
+   birch(W*.36,gy,26);birch(W*.38,gy,22);birch(W*.69,gy,24);
+ },
+ ae:function(gy,W){
+   cx.fillStyle=hz('#e6c68f',.25);cx.beginPath();cx.moveTo(0,gy);
+   for(var x=0;x<=W+8;x+=8)cx.lineTo(x,gy-12-6*Math.sin(x/37)-4*Math.sin(x/13+1));
+   cx.lineTo(W,gy);cx.closePath();cx.fill();
+   var ex=W*.86;
+   pg(hz('#9fb3c6'),[ex-14,gy,ex-14,gy-96,ex-3,gy-112,ex-3,gy]);pg(hz('#b9c9d6'),[ex+2,gy,ex+2,gy-84,ex+13,gy-100,ex+13,gy]);
+   lights(ex-14,gy-96,11,96,71);lights(ex+2,gy-84,11,84,72);
+   var bx=W*.6,y=gy;
+   [[22,34],[18,30],[14,27],[10,23],[7,18],[4,14]].forEach(function(s,k){
+     rc(hz('#a9b9c8'),bx-s[0]/2,y-s[1],s[0],s[1]);rc(hz('#dbe5ec',.45),bx-s[0]/2,y-s[1],s[0]*.4,s[1]);lights(bx-s[0]/2,y-s[1],s[0],s[1],73+k);y-=s[1];
+   });
+   rc(hz('#a9b9c8'),bx-1.1,y-22,2.2,22);
+   var ax=W*.15;
+   cx.fillStyle=hz('#f2f5f7');cx.beginPath();cx.moveTo(ax-12,gy);cx.lineTo(ax-12,gy-84);cx.quadraticCurveTo(ax+28,gy-58,ax+16,gy);cx.closePath();cx.fill();
+   ln(hz('#98a9b8'),2.2,ax-14,gy,ax-14,gy-94);ln(hz('#98a9b8'),1.2,ax-14,gy-40,ax+10,gy-10);ln(hz('#98a9b8'),1.2,ax-14,gy-10,ax+10,gy-40);
+   rc(hz('#98a9b8'),ax+2,gy-62,12,2);
+   palm(W*.31,gy,28);palm(W*.4,gy,24);palm(W*.73,gy,30);
+ },
+ cn:function(gy,W){
+   var wx=W*.8,h2=150;
+   pg(hz('#a8bccc'),[wx-13,gy,wx-8,gy-h2,wx+8,gy-h2,wx+13,gy]);lights(wx-11,gy-h2+20,22,h2-20,81);
+   pg(css(lerp3(TOPA,BOTA,(gy-h2+14)/HY)),[wx-6,gy-h2+8,wx+6,gy-h2+8,wx+5,gy-h2+18,wx-5,gy-h2+18]);
+   var sx=W*.64,h=166;
+   cx.fillStyle=hz('#98b4c8');cx.beginPath();cx.moveTo(sx-15,gy);cx.bezierCurveTo(sx-15,gy-h*.5,sx-9,gy-h*.8,sx-4,gy-h);
+   cx.lineTo(sx+5,gy-h+6);cx.bezierCurveTo(sx+10,gy-h*.75,sx+13,gy-h*.45,sx+13,gy);cx.closePath();cx.fill();
+   lights(sx-11,gy-h*.75,22,h*.75,82);
+   var jx=W*.54,y=gy;
+   [[18,40],[15,28],[12,20],[9,14],[6,10],[4,7]].forEach(function(s,k){rc(hz('#9aa8b0'),jx-s[0]/2,y-s[1],s[0],s[1]);lights(jx-s[0]/2,y-s[1],s[0],s[1],83+k);y-=s[1]});
+   rc(hz('#9aa8b0'),jx-.8,y-18,1.6,18);
+   var px=W*.42,pc='#c9476f';
+   ln(hz('#a3adb5'),2.4,px-13,gy,px,gy-50);ln(hz('#a3adb5'),2.4,px+13,gy,px,gy-50);ln(hz('#a3adb5'),2.4,px,gy,px,gy-50);
+   rc(hz('#a3adb5'),px-2,gy-128,4,80);ci(hz(pc,.3),px,gy-52,11);ci(hz(pc,.3),px,gy-104,7);ci(hz(pc,.3),px,gy-124,3);rc(hz('#a3adb5'),px-.8,gy-150,1.6,24);
+   [W*.35,W*.48].forEach(function(x){cx.fillStyle=hz('#4e8f5a',.3);cx.beginPath();cx.ellipse(x,gy-10,7,9,0,0,6.2832);cx.fill()});
+ },
+ tr:function(gy,W){
+   rc(hz('#3f88b5',.3),0,gy-16,W,16);
+   var b1=W*.86;
+   rc(hz('#c9ced2'),b1-2,gy-62,4,62);rc(hz('#c9ced2'),W+20,gy-62,4,62);
+   cx.strokeStyle=hz('#a5aeb5');cx.lineWidth=1.2;cx.beginPath();cx.moveTo(b1-60,gy-22);cx.quadraticCurveTo(b1-30,gy-30,b1,gy-62);cx.quadraticCurveTo(b1+(W+22-b1)/2,gy-20,W+22,gy-62);cx.stroke();
+   rc(hz('#a5aeb5'),b1-60,gy-22,W-b1+80,2.5);
+   var gx=W*.14;
+   rc(hz('#cbbfa8'),gx-7,gy-74,14,74);rc(hz('#cbbfa8'),gx-8.5,gy-77,17,3);pg(hz('#6d7f8f'),[gx-8,gy-77,gx+8,gy-77,gx,gy-100]);lights(gx-7,gy-72,14,50,91);
+   var hx=W*.66,c2='#d8a691';
+   rc(hz(c2),hx-30,gy-30,60,30);rc(hz(c2),hx-17,gy-40,34,10);dome(hz('#9aa3a8'),hx,gy-40,19,.62);
+   [hx-40,hx+40].forEach(function(x){minaret(hz('#d9b7a6'),x,gy,70)});[hx-35,hx+35].forEach(function(x){minaret(hz('#d9b7a6'),x,gy,60)});
+   var mx=W*.45,c='#cbc6be';
+   rc(hz(c),mx-38,gy-36,76,36);dome(hz(c),mx-26,gy-36,10);dome(hz(c),mx+26,gy-36,10);rc(hz(c),mx-20,gy-46,40,10);dome(hz(c),mx,gy-46,21);
+   [mx-56,mx-46,mx+46,mx+56].forEach(function(x){minaret(hz('#d6d1c9'),x,gy,86)});
+   [.3,.33,.58,.6].forEach(function(f,k){cypress(W*f,gy,24+k*3)});
+ },
+ sg:function(gy,W){
+   [[-16,112,12],[-2,136,13],[12,98,12],[25,122,11]].forEach(function(t,k){tower('#93aec4',W*.68+t[0],gy,t[2],t[1],101+k,'#c4d8e6')});
+   var mx=W*.42,c='#cbd5dc';
+   [-16,0,16].forEach(function(o,k){pg(hz(c),[mx+o-5,gy,mx+o-6.5,gy-96,mx+o+6.5,gy-96,mx+o+5,gy]);lights(mx+o-5,gy-94,10,94,104+k)});
+   pg(hz('#a9b6bf'),[mx-30,gy-102,mx+34,gy-102,mx+48,gy-100,mx+34,gy-96,mx-30,gy-96]);
+   for(var k=0;k<6;k++)ci(hz('#4e9a5a',.3),mx-24+k*10,gy-103,2);
+   [[.1,52],[.16,64],[.22,46]].forEach(function(t,k){
+     var x=W*t[0],h=t[1];ln(hz('#7d5aa6',.3),3,x,gy,x,gy-h+8);
+     pg(hz('#8e5fb5',.3),[x-2,gy-h+10,x-12,gy-h,x+12,gy-h,x+2,gy-h+10]);
+     if(NIGHT>.3){cx.globalAlpha=NIGHT*.8;rc('#ff8be0',x-12,gy-h-.5,24,1.5);cx.globalAlpha=1}
+   });
+   var fx=W*.9,fy=gy-50,r=38;
+   ln(hz('#b5c0c8'),2,fx,fy,fx-15,gy);ln(hz('#b5c0c8'),2,fx,fy,fx+15,gy);
+   cx.strokeStyle=hz('#c9d3da');cx.lineWidth=2;cx.beginPath();cx.arc(fx,fy,r,0,6.2832);cx.stroke();
+   cx.lineWidth=.6;cx.beginPath();for(var s=0;s<14;s++){var a=s/14*6.2832;cx.moveTo(fx,fy);cx.lineTo(fx+Math.cos(a)*r,fy+Math.sin(a)*r)}cx.stroke();
+   for(s=0;s<14;s++){var a2=s/14*6.2832;ci(hz('#e8eef2',.3),fx+Math.cos(a2)*r,fy+Math.sin(a2)*r,1.8)}
+   palm(W*.3,gy,30);palm(W*.56,gy,26);
+ }
+};
+function eaves(c,x,y,w,h){cx.fillStyle=c;cx.beginPath();cx.moveTo(x-w/2-3,y-h-2);cx.quadraticCurveTo(x-w/4,y-h*.55,x,y-h*1.3);cx.quadraticCurveTo(x+w/4,y-h*.55,x+w/2+3,y-h-2);cx.lineTo(x+w/2,y);cx.lineTo(x-w/2,y);cx.closePath();cx.fill()}
+function backdrop(gy){(BACKDROP[S.country]||BACKDROP.ru)(gy,CW)}
+
+/* ---- picking a country for the new trust ---- */
+var cSel='ru';
+function buildCountryList(){
+  var box=$('clist');
+  CORDER.forEach(function(k){
+    var b=document.createElement('button');b.type='button';b.className='copt';b.id='c-'+k;
+    b.innerHTML='<span class="flag">'+flagSvg(k)+'</span><span class="ct"><b>'+CTRY[k].name+'</b><small>'+CTRY[k].sub+' · '+CTRY[k].txt+'</small></span>';
+    b.addEventListener('click',function(){cSel=k;markCountry()});
+    box.appendChild(b);
+  });
+}
+function markCountry(){
+  CORDER.forEach(function(k){$('c-'+k).setAttribute('aria-pressed',String(k===cSel))});
+  T($('cpick-go'),'Открыть трест: '+CTRY[cSel].name+' · +'+Math.max(0,repTotal()-S.rep)+' к репутации');
+}
+function openCountryPick(){
+  if(repTotal()<=S.rep)return;
+  cSel=S.country||'ru';markCountry();$('cpick').hidden=false;
+}
+function doPrestige(){
+  var t=repTotal();if(t<=S.rep)return;
+  var o=S;S=fresh(t,o.life);['mode','mute','tut','theme','hw','q','boost','st','day'].forEach(function(k){S[k]=o[k]});
+  S.country=cSel;save();$('cpick').hidden=true;WK.length=0;
+  toast('Новый трест открыт: '+CTRY[cSel].name+'. Репутация: '+t);SFX.win();
+}
+
+/* ---------- contracts and daily tasks ---------- */
+function lv(i){return S.b[i].lvl}
+function nM(){var n=0;S.b.forEach(function(s){if(s.mgr)n++});return n}
+function nU(){var n=0;S.b.forEach(function(s){n+=(s.up[0]?1:0)+(s.up[1]?1:0)});return n}
+function maxLv(){var m=0;S.b.forEach(function(s){if(s.lvl>m)m=s.lvl});return m}
+function has(i){return lv(i)?1:0}
+/* a chain of contracts, one at a time; r.m is money, r.b is minutes of double income */
+var QUESTS=[
+ {t:'Наймите 10 бригад на ремонт квартир',g:function(){return [lv(0),10]},r:{m:40}},
+ {t:'Откройте гаражи',g:function(){return [has(1),1]},r:{m:100}},
+ {t:'Наймите бригадира отделочников',g:function(){return [S.b[0].mgr?1:0,1]},r:{m:300}},
+ {t:'Доведите ремонт квартир до 25 бригад',g:function(){return [lv(0),25]},r:{m:800}},
+ {t:'Откройте коттеджи',g:function(){return [has(2),1]},r:{m:1500}},
+ {t:'Внедрите первую технологию',g:function(){return [nU(),1]},r:{m:3000}},
+ {t:'Наймите трёх руководителей',g:function(){return [nM(),3]},r:{b:10}},
+ {t:'Откройте таунхаусы',g:function(){return [has(3),1]},r:{m:15e3}},
+ {t:'Заработайте 1 млн ₽ за всё время',g:function(){return [S.life,1e6]},r:{m:5e4}},
+ {t:'Откройте пятиэтажки',g:function(){return [has(4),1]},r:{m:2e5}},
+ {t:'Доведите гаражи до 50 бригад',g:function(){return [lv(1),50]},r:{b:15}},
+ {t:'Внедрите пять технологий',g:function(){return [nU(),5]},r:{m:2e6}},
+ {t:'Откройте высотки',g:function(){return [has(5),1]},r:{m:3e6}},
+ {t:'Наймите ГИПа',g:function(){return [S.b[5].mgr?1:0,1]},r:{m:1e7}},
+ {t:'Откройте торговые центры',g:function(){return [has(6),1]},r:{m:4e7}},
+ {t:'Доведите любое направление до 100 бригад',g:function(){return [maxLv(),100]},r:{b:20}},
+ {t:'Откройте небоскрёбы',g:function(){return [has(7),1]},r:{m:5e8}},
+ {t:'Наймите всех восьмерых руководителей',g:function(){return [nM(),8]},r:{m:2e9}},
+ {t:'Внедрите все шестнадцать технологий',g:function(){return [nU(),16]},r:{b:30}},
+ {t:'Откройте новый трест и получите репутацию',g:function(){return [S.rep?1:0,1]},r:{b:30}}
+];
+var DAILY={
+ hire:{t:function(n){return 'Наймите '+n+' '+plural(n,'бригаду','бригады','бригад')},
+   n:function(){var o=0;S.b.forEach(function(s){if(s.lvl)o++});return Math.min(60,10+5*o)},v:function(){return S.st.hired-S.day.base.hired}},
+ manual:{t:function(n){return 'Сдайте '+n+' объектов вручную, нажимая на значки'},n:function(){return 40},
+   v:function(){return S.st.manual-S.day.base.manual},ok:function(){return S.b.some(function(s){return s.lvl&&!s.mgr})||!S.b.some(function(s){return s.lvl})}},
+ earn:{t:function(n){return 'Заработайте '+fmt(n)+' ₽'},n:function(){return Math.max(1000,Math.round(S.day.rate*900))},v:function(){return S.life-S.day.base.life}},
+ buy:{t:function(){return 'Наймите руководителя или внедрите технологию'},n:function(){return 1},v:function(){return S.st.buys-S.day.base.buys},ok:function(){return nM()+nU()<24}},
+ ms:{t:function(){return 'Доведите любое направление до рубежа скорости ×2'},n:function(){return 1},v:function(){return S.st.ms-S.day.base.ms}}
+};
+function dayKey(t){var d=new Date(t);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+/* the day follows the latest time the game has seen, so turning the clock back does not hand out the same tasks twice */
+function rollDay(){
+  var key=dayKey(Math.max(tnow(),S.hw||0));
+  if(S.day&&S.day.key===key)return;
+  var pool=Object.keys(DAILY).filter(function(k){return !DAILY[k].ok||DAILY[k].ok()}),h=0,picked=[];
+  for(var c=0;c<key.length;c++)h=(h*31+key.charCodeAt(c))>>>0;
+  while(picked.length<3&&pool.length){picked.push(pool.splice(h%pool.length,1)[0]);h=Math.floor(h/7)+13}
+  S.day={key:key,rate:rate()/bm(),base:{hired:S.st.hired,manual:S.st.manual,buys:S.st.buys,ms:S.st.ms,life:S.life},tasks:[]};
+  picked.forEach(function(k){S.day.tasks.push({k:k,n:DAILY[k].n(),c:0})});
+}
+function dailyPrize(){return Math.max(500,Math.round(rate()/bm()*600))}
+function prizeText(r){return r.m?fmt(r.m)+' ₽':'×2 доход на '+r.b+' мин'}
+function give(r,what){
+  if(r.m)S.money+=r.m;
+  if(r.b)S.boost=(S.boost||0)+r.b*60;
+  SFX.win();toast(what+': '+prizeText(r));
+}
+function claimQuest(){
+  var q=QUESTS[S.q];if(!q)return;var g=q.g();if(g[0]<g[1])return;
+  give(q.r,'Контракт выполнен');S.q++;bump($('qm-btn'),'pop');
+}
+function claimDaily(j){
+  var d=S.day.tasks[j];if(!d||d.c)return;if(DAILY[d.k].v()<d.n)return;
+  d.c=1;give({m:dailyPrize()},'Задание выполнено');bump($('qd-btn-'+j),'pop');
+}
+function questReady(){
+  var q=QUESTS[S.q];if(q){var g=q.g();if(g[0]>=g[1])return true}
+  return !!(S.day&&S.day.tasks.some(function(d){return !d.c&&DAILY[d.k].v()>=d.n}));
+}
+function qnum(v){return v>=1e4?fmt(v):String(Math.floor(v))}
+function renderQuests(){
+  var q=QUESTS[S.q];
+  T($('qm-n'),q?'Контракт '+(S.q+1)+' из '+QUESTS.length:'Все контракты выполнены');
+  $('qm-btn').hidden=!q;
+  if(!q){T($('qm-t'),'Вы выполнили все контракты');T($('qm-r'),'Новые появятся в следующих обновлениях игры.')}
+  else{
+    var g=q.g(),done=g[0]>=g[1];
+    T($('qm-t'),q.t);T($('qm-r'),'Награда: '+prizeText(q.r));
+    $('qm-btn').disabled=!done;T($('qm-l'),done?'Забрать':qnum(Math.min(g[0],g[1]))+' / '+qnum(g[1]));P($('qm-btn'),g[0]/g[1]);
+  }
+  S.day.tasks.forEach(function(d,j){
+    var D=DAILY[d.k],v=Math.max(0,D.v()),done=v>=d.n,row=$('qd-'+j);
+    row.hidden=false;row.classList.toggle('done',!!d.c);
+    T($('qd-t-'+j),D.t(d.n));T($('qd-r-'+j),d.c?'Награда получена':'Награда: '+fmt(dailyPrize())+' ₽');
+    var b=$('qd-btn-'+j);b.disabled=!!d.c||!done;
+    T($('qd-l-'+j),d.c?'✓ Получено':done?'Забрать':qnum(Math.min(v,d.n))+' / '+qnum(d.n));P(b,d.c?0:v/d.n);
+  });
+  for(var j=S.day.tasks.length;j<3;j++)$('qd-'+j).hidden=true;
+  var t=new Date(Math.max(tnow(),S.hw||0)),mid=new Date(t.getFullYear(),t.getMonth(),t.getDate()+1);
+  T($('qd-reset'),'Новые задания через '+hmin((mid-t)/1000)+'.');
+}
 
 /* ---------- picture on purchase ---------- */
 function showGift(kind,i,k,title){
@@ -942,7 +1265,7 @@ function payAway(){
   if(base&&away<-300)toast('Часы телефона переведены назад. Доход за отсутствие снова пойдёт, когда время догонит последний вход.');
   if(base&&away>0){
     var dt=Math.min(away,CAP),before=S.money,i;
-    step(dt);
+    OFFCALC=true;step(dt);OFFCALC=false;
     for(i=0;i<B.length;i++)acc[i]=0;
     manual=false;
     if(dt>60&&S.money-before>=1){
@@ -955,7 +1278,7 @@ function payAway(){
 }
 function resume(){
   clockOK=false;
-  syncClock().then(function(){payAway();lastPerf=performance.now();clockOK=true});
+  syncClock().then(function(){payAway();rollDay();lastPerf=performance.now();clockOK=true});
 }
 
 /* ---------- loop ---------- */
@@ -965,6 +1288,7 @@ function frame(){
   if(!(dt>0))dt=0;if(dt>1)dt=1;
   if(clockOK){
     step(dt);
+    if(S.boost>0)S.boost=Math.max(0,S.boost-dt);
     var tn=tnow();if(tn>S.hw)S.hw=tn;
     for(i=0;i<B.length;i++)if(acc[i]>0&&now-lastPop[i]>1500){
       popup(i,acc[i]);acc[i]=0;lastPop[i]=now;
@@ -977,11 +1301,12 @@ function frame(){
   if(++ticks%20===0)dotCheck();
   if(ticks%6===0)tutor();
   if(ticks%30===0)syncWorkers();
+  if(ticks%60===0&&clockOK)rollDay();
   requestAnimationFrame(frame);
 }
 function start(data){
   S=load(data);
-  applyTheme();
+  applyTheme();buildCountryList();
   P0=isDark()?.6:.12;
   sizeCanvas();
   if(window.ResizeObserver)new ResizeObserver(sizeCanvas).observe(cv);else window.addEventListener('resize',sizeCanvas);
