@@ -44,6 +44,19 @@ img{max-width:100%}
   --accent:#ff8436; --on-accent:#1f1205; --accent-text:#ffa15f; --go:#5fce85; --accent-hi:#ffa663; --accent-lo:#a84c14; --prog:#5a3a22; --coin:#ffd24a; --coin-edge:#c08a00; --coin-ink:#5a3d00;
   --hz-a:#d9ac0a; --hz-b:#0c1216; color-scheme:dark;
 }
+/* a theme chosen inside the game wins over both the system setting and the viewer's own switch */
+html:root[data-scheme="light"]{
+  --bg:#e7ebec; --surface:#f7f8f7; --sunk:#d6dde0; --ink:#1b272d; --muted:#55656c; --line:#c0c9cd;
+  --accent:#f26a1b; --on-accent:#1f1205; --accent-text:#b34708; --go:#1c7439;
+  --accent-hi:#ff9247; --accent-lo:#ad4407; --prog:#f3c8a4; --coin:#ffd24a; --coin-edge:#c08a00; --coin-ink:#5a3d00;
+  --hz-a:#f5c518; --hz-b:#1b272d;
+  color-scheme:light;
+}
+html:root[data-scheme="dark"]{
+  --bg:#11181d; --surface:#1a242b; --sunk:#0c1216; --ink:#e6edef; --muted:#8fa0a8; --line:#2f3d47;
+  --accent:#ff8436; --on-accent:#1f1205; --accent-text:#ffa15f; --go:#5fce85; --accent-hi:#ffa663; --accent-lo:#a84c14; --prog:#5a3a22; --coin:#ffd24a; --coin-edge:#c08a00; --coin-ink:#5a3d00;
+  --hz-a:#d9ac0a; --hz-b:#0c1216; color-scheme:dark;
+}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.35;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -123,9 +136,9 @@ h2:first-child{margin-top:0}
 .pay{flex:none;padding:9px 12px;font-size:13px;margin-bottom:3px}
 .row.done .pay{background:none;box-shadow:none;color:var(--go);padding-inline:0}
 .row.dim .row-t{opacity:.55}
-.ava{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;flex:none;background:var(--c);color:#1b272d;
+.ava{width:48px;height:40px;border-radius:8px;overflow:hidden;display:block;flex:none;border-bottom:3px solid var(--c);color:#1b272d;
   box-shadow:inset 0 -3px 0 rgba(0,0,0,.16);font-family:var(--f-display);font-size:14px}
-.ava svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+.ava svg{display:block;width:100%;height:100%}
 .row.dim .ava{filter:grayscale(1);opacity:.5}
 
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
@@ -160,12 +173,21 @@ h2:first-child{margin-top:0}
 @keyframes hintpulse{0%,100%{outline-color:var(--ink)}50%{outline-color:transparent}}
 .hint-target{outline:3px solid var(--ink);outline-offset:3px;animation:hintpulse 1.1s ease-in-out infinite}
 .tabs .hint-target{outline-offset:-5px}
+.theme-seg{width:max-content;max-width:100%;margin-bottom:6px}
+.art{width:100%;max-width:260px;aspect-ratio:4/3;margin:0 auto 12px;border-radius:10px;overflow:hidden}
+.art svg{display:block;width:100%;height:100%}
+.gift small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text);margin-bottom:2px}
+.gift p{margin:0 0 14px}
+@keyframes giftin{from{transform:scale(.72);opacity:0}to{transform:none;opacity:1}}
+@keyframes artbob{0%{transform:translateY(8px) scale(.94)}60%{transform:translateY(-3px) scale(1.02)}100%{transform:none}}
+.gift{animation:giftin .34s cubic-bezier(.2,1.35,.4,1)}
+.gift .art{animation:artbob .6s .1s ease-out both}
 @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.09)}100%{transform:scale(1)}}
 .pop{animation:pop .26s ease-out}
 .rev,.lvl{transform-origin:center}
 @keyframes cele{0%{box-shadow:0 0 0 3px var(--accent),0 0 26px var(--hz-a)}100%{box-shadow:0 0 0 0 transparent,0 0 0 transparent}}
 .cele{animation:cele 1.1s ease-out}
-@media (prefers-reduced-motion: reduce){.pop,.cele,.hint-target{animation:none}.bar.fast .fill{animation:none}.work:not(:disabled):active,.buy:not(:disabled):active,.pay:not(:disabled):active{transform:none}}
+@media (prefers-reduced-motion: reduce){.pop,.cele,.hint-target,.gift,.gift .art{animation:none}.bar.fast .fill{animation:none}.work:not(:disabled):active,.buy:not(:disabled):active,.pay:not(:disabled):active{transform:none}}
 </style>
 </head>
 <body>
@@ -214,6 +236,10 @@ h2:first-child{margin-top:0}
         <div class="stat"><small>Бонус к доходу</small><b id="st-bonus">+0%</b></div>
         <div class="stat"><small>Бригад в работе</small><b id="st-crews">0</b></div>
       </div>
+      <h2>Оформление</h2>
+      <div class="seg theme-seg" role="group" aria-label="Тема оформления">
+        <button type="button" id="th-auto">Как в системе</button><button type="button" id="th-light">Светлая</button><button type="button" id="th-dark">Тёмная</button>
+      </div>
       <h2>Новый трест</h2>
       <p class="lead">Закройте трест и откройте новый, уже с именем на рынке. Объекты, руководители и технологии обнуляются, репутация остаётся навсегда. Каждое очко репутации даёт +5% к доходу.</p>
       <button type="button" class="big" id="prestige"></button>
@@ -231,6 +257,16 @@ h2:first-child{margin-top:0}
 </div></nav>
 
 <div class="toast" id="toast" role="status" hidden></div>
+
+<div class="veil" id="gift" hidden role="dialog" aria-modal="true" aria-labelledby="gift-t">
+  <div class="sheet gift">
+    <div class="art" id="gift-art"></div>
+    <small id="gift-k"></small>
+    <h2 id="gift-t"></h2>
+    <p id="gift-d"></p>
+    <button type="button" class="big" id="gift-ok">Отлично</button>
+  </div>
+</div>
 
 <div class="veil" id="away" hidden role="dialog" aria-modal="true" aria-labelledby="away-h">
   <div class="sheet">
@@ -259,7 +295,7 @@ var B=[
   mgr:['Начальник участка',4e5],ups:[['Типовой проект',2e6],['Свой бетонный узел',2e8]]},
  {name:'Пятиэтажки',pitch:'Панельная серия, пять этажей без лифта',cost:103680,g:1.12,t:20,rev:36000,
   icon:'<rect x="3" y="7" width="18" height="13"/><path d="M3 11.3h18M3 15.6h18M9 7v13M15 7v13"/>',
-  mgr:['Главный инженер',3e6],ups:[['Башенный кран',25e6],['Панели заводской готовности',25e8]]},
+  mgr:['ГАП',3e6],ups:[['Башенный кран',25e6],['Панели заводской готовности',25e8]]},
  {name:'Высотки',pitch:'Монолитный каркас, витражи на всю высоту',cost:1244160,g:1.11,t:40,rev:260000,
   icon:'<rect x="7" y="3" width="10" height="18"/><path d="M10 7h4M10 11h4M10 15h4"/>',
   mgr:['ГИП',25e6],ups:[['Бетон B40',3e8],['Самоподъёмная опалубка',3e10]]},
@@ -278,7 +314,7 @@ function $(id){return document.getElementById(id)}
 function T(el,t){if(el._t!==t){el._t=t;el.textContent=t}}
 function P(el,f){var v=Math.max(0,Math.min(100,Math.floor(f*100)));if(el._pp!==v){el._pp=v;el.style.setProperty('--p',v)}}
 function fresh(rep,life){
-  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,ts:Date.now(),
+  return {v:1,money:10,life:life||0,rep:rep||0,mode:1,mute:false,tut:0,theme:'auto',ts:Date.now(),
     b:B.map(function(){return {lvl:0,p:0,run:false,mgr:false,up:[false,false]}})};
 }
 function load(d){
@@ -289,7 +325,7 @@ function load(d){
   var f=fresh();
   ['money','life','rep','ts'].forEach(function(k){if(typeof s[k]==='number'&&isFinite(s[k])&&s[k]>=0)f[k]=s[k]});
   if(s.mode===1||s.mode===10||s.mode==='max')f.mode=s.mode;
-  f.mute=!!s.mute;f.tut=s.tut?1:0;
+  f.mute=!!s.mute;f.tut=s.tut?1:0;f.theme=(s.theme==='light'||s.theme==='dark')?s.theme:'auto';
   s.b.forEach(function(x,i){
     if(!x)return;var y=f.b[i];
     y.lvl=Math.max(0,Math.floor(+x.lvl||0));y.p=Math.max(0,+x.p||0);y.run=!!x.run;y.mgr=!!x.mgr;
@@ -353,6 +389,87 @@ function step(dt){
 }
 function repTotal(){return Math.floor(Math.sqrt(S.life/REP_K))}
 
+/* ---------- pictures for managers and technologies ---------- */
+/* Flat illustrations, 120×90, with their own background so they read on light and dark cards alike. */
+function svgArt(body){return '<svg viewBox="0 0 120 90" aria-hidden="true"><rect width="120" height="90" fill="#e3edf4"/>'+body+'</svg>'}
+var GROUND_ART='<rect y="74" width="120" height="16" fill="#c3ccd1"/>';
+var TRUCK_ART='<rect x="70" y="66" width="44" height="4" fill="#2f3a40"/><rect x="100" y="50" width="14" height="16" rx="2" fill="#f2c230"/><rect x="104" y="53" width="7" height="6" fill="#8fc4dd"/><ellipse cx="84" cy="56" rx="15" ry="10" fill="#e8590c"/><path d="M78 47v18M88 47v18" stroke="#fff3e0" stroke-width="3"/><g fill="#161b1f"><circle cx="76" cy="72" r="5"/><circle cx="90" cy="72" r="5"/><circle cx="106" cy="72" r="5"/></g>';
+var TECH_ART=[
+ [ /* Лазерный уровень */
+  svgArt('<rect width="120" height="74" fill="#f1e6d2"/><rect y="74" width="120" height="16" fill="#b9a68a"/><path d="M0 40H120M78 0V74" stroke="#ff3b30" stroke-width="2"/><g fill="none" stroke="#3b4a54" stroke-width="3" stroke-linecap="round"><path d="M78 50L64 86M78 50L92 86M78 50V86"/></g><rect x="67" y="31" width="22" height="19" rx="3" fill="#f2c230"/><rect x="71" y="35" width="14" height="8" rx="2" fill="#2f3a40"/><circle cx="78" cy="40" r="2.5" fill="#ff3b30"/>'),
+  /* Штукатурная станция */
+  svgArt('<rect width="120" height="74" fill="#e9e2d6"/><rect y="74" width="120" height="16" fill="#b9a68a"/><rect x="64" y="8" width="50" height="66" fill="#d2cabd"/><path d="M64 8h50v66H64" fill="none" stroke="#bdb3a3" stroke-width="2"/><path d="M14 44L20 26H40L46 44Z" fill="#59636a"/><rect x="10" y="44" width="40" height="24" rx="4" fill="#f26a1b"/><rect x="16" y="50" width="12" height="8" rx="1.5" fill="#fff3e0"/><circle cx="18" cy="72" r="6" fill="#2f3a40"/><circle cx="42" cy="72" r="6" fill="#2f3a40"/><path d="M50 56C66 58 58 30 74 30" fill="none" stroke="#2f3a40" stroke-width="4" stroke-linecap="round"/><g fill="none" stroke="#9aa3a8" stroke-width="2" stroke-linecap="round"><path d="M76 30l9-6M76 30h11M76 30l9 6"/></g>')
+ ],[
+  /* Сэндвич-панели */
+  svgArt(GROUND_ART+'<rect x="14" y="70" width="92" height="4" fill="#a07a4a"/>'+[['#4aa6a0',58,14],['#e2776b',46,20],['#6db1d6',34,26]].map(function(p){return '<rect x="'+p[2]+'" y="'+p[1]+'" width="80" height="11" rx="1" fill="'+p[0]+'"/><rect x="'+p[2]+'" y="'+(p[1]+3.5)+'" width="80" height="4" fill="#ffe08a"/>'}).join('')),
+  /* Сборный каркас */
+  svgArt(GROUND_ART+'<g fill="none" stroke="#8d9aa1" stroke-width="2.5"><path d="M24 74L60 49M60 74L96 49M24 49L60 24M60 49L96 24"/></g><g fill="none" stroke="#59636a" stroke-width="5" stroke-linecap="square"><path d="M24 74V24M60 74V24M96 74V24M24 24H96M24 49H96"/></g><g fill="#f2c230"><circle cx="24" cy="24" r="2.6"/><circle cx="60" cy="24" r="2.6"/><circle cx="96" cy="24" r="2.6"/><circle cx="24" cy="49" r="2.6"/><circle cx="60" cy="49" r="2.6"/><circle cx="96" cy="49" r="2.6"/></g>')
+ ],[
+  /* Газобетон D500 */
+  svgArt(GROUND_ART+'<rect x="14" y="70" width="92" height="4" fill="#a07a4a"/><g fill="#f4f3ee" stroke="#c9c6bb" stroke-width="1.5">'+
+   [[18,57],[46,57],[74,57],[32,44],[60,44],[46,31]].map(function(p){return '<rect x="'+p[0]+'" y="'+p[1]+'" width="28" height="13"/>'}).join('')+
+   '</g><g fill="#d8d4c8"><circle cx="24" cy="62" r="1.2"/><circle cx="36" cy="66" r="1"/><circle cx="54" cy="61" r="1.2"/><circle cx="84" cy="65" r="1"/><circle cx="40" cy="49" r="1"/><circle cx="70" cy="52" r="1.2"/></g><text x="60" y="41" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="#59636a">D500</text>'),
+  /* Монолитная плита */
+  svgArt(GROUND_ART+'<g fill="none" stroke="#f2b705" stroke-width="3"><path d="M22 52V74M42 52V74M62 52V74M76 50V72M98 40V64"/></g><path d="M14 46L44 32H108L78 46Z" fill="#c4cace"/><path d="M14 46H78V52H14Z" fill="#9aa3a8"/><path d="M78 46L108 32V38L78 52Z" fill="#8d9599"/><g fill="none" stroke="#b5532e" stroke-width="1.3"><path d="M26 44L56 33M38 44L68 33M50 44L80 33M62 44L92 33M74 44L104 33M22 42H84M30 38H92M38 35H100"/></g>')
+ ],[
+  /* Типовой проект */
+  svgArt('<g transform="rotate(-4 60 44)"><rect x="16" y="12" width="88" height="64" rx="3" fill="#2f6fb3"/><g fill="none" stroke="#e8f1fb" stroke-width="1.6"><rect x="24" y="20" width="56" height="44"/><path d="M52 20V40H80M24 44H44M44 44V64M62 40V64"/><path d="M44 54a8 8 0 0 1 8 -8"/></g><rect x="84" y="52" width="16" height="18" fill="none" stroke="#e8f1fb" stroke-width="1.4"/><text x="92" y="64" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#e8f1fb">ТП</text></g>'),
+  /* Свой бетонный узел */
+  svgArt(GROUND_ART+'<g fill="none" stroke="#8d9aa1" stroke-width="2"><path d="M20 64V74M38 64V74M46 64V74M64 64V74"/></g><rect x="18" y="12" width="22" height="42" rx="3" fill="#dfe2e6"/><path d="M18 54H40L32 64H26Z" fill="#b9c0c4"/><rect x="44" y="18" width="22" height="36" rx="3" fill="#cfd4d8"/><path d="M44 54H66L58 64H52Z" fill="#aab2b6"/><rect x="18" y="22" width="22" height="3" fill="#f26a1b"/><rect x="44" y="28" width="22" height="3" fill="#f26a1b"/>'+TRUCK_ART)
+ ],[
+  /* Башенный кран */
+  svgArt(GROUND_ART+'<rect x="50" y="66" width="16" height="8" fill="#59636a"/><rect x="54" y="16" width="8" height="52" fill="none" stroke="#f2b705" stroke-width="2.5"/><path d="M54 22l8 8-8 8 8 8-8 8 8 8" fill="none" stroke="#f2b705" stroke-width="1.6"/><path d="M14 16H110" stroke="#f2b705" stroke-width="4"/><g fill="none" stroke="#f2b705" stroke-width="2"><path d="M58 4L28 16M58 4L100 16M58 4V14"/></g><rect x="14" y="16" width="12" height="9" fill="#59636a"/><rect x="62" y="18" width="8" height="7" fill="#3b4a54"/><path d="M92 18V44" stroke="#2f3a40" stroke-width="1.5"/><rect x="82" y="44" width="20" height="8" fill="#b9c0c4"/>'),
+  /* Панели заводской готовности */
+  svgArt('<path d="M60 6V12" stroke="#2f3a40" stroke-width="2"/><path d="M56 12h8v4h-8z" fill="#f2b705"/><g fill="none" stroke="#2f3a40" stroke-width="1.5"><path d="M60 16L30 32M60 16L90 32"/></g><rect x="28" y="32" width="64" height="40" fill="#e6dccb"/><rect x="28" y="32" width="64" height="40" fill="none" stroke="#c9bfa9" stroke-width="2"/><rect x="36" y="40" width="18" height="18" fill="#8fc4dd"/><rect x="66" y="40" width="18" height="18" fill="#8fc4dd"/><path d="M45 40v18M75 40v18" stroke="#ffffff" stroke-width="1.5"/><rect x="34" y="60" width="22" height="4" fill="#3f8fc6"/><rect x="64" y="60" width="22" height="4" fill="#3f8fc6"/>')
+ ],[
+  /* Бетон B40 */
+  svgArt(GROUND_ART+'<path d="M56 16L86 29L56 42L26 29Z" fill="#d5d9dc"/><path d="M26 29L56 42V74L26 61Z" fill="#b9c0c4"/><path d="M86 29L56 42V74L86 61Z" fill="#9aa3a8"/><g fill="#a3abb0"><circle cx="36" cy="46" r="1.2"/><circle cx="44" cy="58" r="1"/><circle cx="70" cy="50" r="1.2"/><circle cx="76" cy="62" r="1"/></g><path d="M86 48L96 56" stroke="#59636a" stroke-width="1.2"/><rect x="88" y="54" width="28" height="15" rx="3" fill="#ffd166"/><text x="102" y="65" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="#2f3a40">B40</text>'),
+  /* Самоподъёмная опалубка */
+  svgArt(GROUND_ART+'<rect x="40" y="22" width="40" height="52" fill="#c9ced2"/><g stroke="#aab2b6" stroke-width="1.5"><path d="M40 34H80M40 46H80M40 58H80"/></g><rect x="36" y="6" width="5" height="18" fill="#e0a200"/><rect x="79" y="6" width="5" height="18" fill="#e0a200"/><rect x="28" y="20" width="64" height="5" fill="#f2b705"/><g stroke="#59636a" stroke-width="1.5"><path d="M30 20V12M90 20V12M30 12H90"/></g><g fill="none" stroke="#1c7439" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M104 60V30M97 37l7-7 7 7"/><path d="M16 60V36M9 43l7-7 7 7"/></g>')
+ ],[
+  /* Большепролётные фермы */
+  svgArt(GROUND_ART+'<rect x="8" y="30" width="9" height="44" fill="#8d9aa1"/><rect x="103" y="30" width="9" height="44" fill="#8d9aa1"/><g fill="none" stroke="#59636a" stroke-width="2.6" stroke-linejoin="round"><path d="M12 26H108M12 42H108"/><path d="M12 42L22 26L32 42L42 26L52 42L62 26L72 42L82 26L92 42L102 26L108 34"/></g><path d="M20 58h80" stroke="#8d9aa1" stroke-width="1.5" stroke-dasharray="4 4"/><text x="60" y="66" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#59636a">пролёт</text>'),
+  /* BIM-модель */
+  svgArt('<rect x="16" y="10" width="88" height="66" rx="6" fill="#2f3a40"/><rect x="22" y="16" width="76" height="54" fill="#0f1d2a"/><text x="27" y="25" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#8fc4dd">BIM</text>'+
+   [['#3f8fc6','#2f6f9e',60],['#f26a1b','#c4520f',48],['#5fce85','#3f9e62',36]].map(function(c){var y=c[2];return '<path d="M42 '+y+'L60 '+(y+8)+'V'+(y+16)+'L42 '+(y+8)+'Z" fill="'+c[0]+'"/><path d="M78 '+y+'L60 '+(y+8)+'V'+(y+16)+'L78 '+(y+8)+'Z" fill="'+c[1]+'"/>'}).join('')+
+   '<path d="M42 36L60 28L78 36L60 44Z" fill="#9fd8ef"/><g fill="none" stroke="#9fd8ef" stroke-width=".8" opacity=".7"><path d="M42 36V68M78 36V68M60 44V76"/></g>')
+ ],[
+  /* Аутригерные этажи */
+  svgArt(GROUND_ART+'<rect x="38" y="6" width="44" height="68" fill="#dfe9ef"/><rect x="38" y="6" width="44" height="68" fill="none" stroke="#8d9aa1" stroke-width="1.5"/><rect x="54" y="6" width="12" height="68" fill="#9aa3a8"/><g fill="none" stroke="#f26a1b" stroke-width="2.6" stroke-linejoin="round"><path d="M54 30L38 22M54 30L38 38M66 30L82 22M66 30L82 38M38 22H82M38 38H82"/><path d="M54 60L38 52M54 60L38 68M66 60L82 52M66 60L82 68M38 52H82M38 68H82"/></g><g fill="none" stroke="#59636a" stroke-width="2" stroke-linecap="round"><path d="M12 30h14M18 24l8 6-8 6"/></g>'),
+  /* Демпфер колебаний */
+  svgArt('<rect x="26" y="6" width="68" height="78" fill="#dfe9ef"/><rect x="26" y="6" width="68" height="78" fill="none" stroke="#8d9aa1" stroke-width="2"/><g fill="none" stroke="#59636a" stroke-width="1.6"><path d="M44 8L60 44M76 8L60 44M60 8V44"/></g><g fill="none" stroke="#59636a" stroke-width="3" stroke-linecap="round"><path d="M42 50H28M78 50H92"/></g><circle cx="60" cy="50" r="17" fill="#e8b21c"/><circle cx="54" cy="44" r="6" fill="#ffe08a"/><path d="M30 74c8-4 52-4 60 0" fill="none" stroke="#aab2b6" stroke-width="1.5"/>')
+ ]
+];
+var TECH_TXT=[
+ ['Стены и полы выводятся в ноль с первого раза.','Машинная штукатурка: десятки квадратных метров за смену.'],
+ ['Утеплённые стены и кровля монтируются за день.','Каркас приходит с завода и собирается на болтах.'],
+ ['Лёгкий тёплый блок плотностью около 500 кг/м³.','Плита на грунте вместо ленты: быстрее и надёжнее.'],
+ ['Один проект на все секции, без лишних согласований.','Бетон нужного класса всегда под рукой.'],
+ ['Кран подаёт панели прямо на этаж.','Окна и отделка установлены ещё на заводе.'],
+ ['Класс прочности B40: тоньше колонны, больше квартир.','Опалубка сама поднимается на следующий ярус.'],
+ ['Большие пролёты без лишних колонн: просторный торговый зал.','Все разделы проекта в одной модели, коллизии ловятся до стройки.'],
+ ['Аутригеры связывают ядро с наружными колоннами и уменьшают крен от ветра.','Маятник наверху гасит раскачивание здания.']
+];
+/* manager portraits: helmet colour, clothes, extras */
+var MGR_LOOK=[
+ {h:'#f28c28',v:'#f26a1b'},{h:'#f2c230',v:'#f26a1b'},{h:'#e5483b',v:'#f26a1b'},{h:'#ffffff',v:'#3b4a54',vest:1},
+ {h:'#ffffff',v:'#5b6b8c',gl:1,roll:1},{h:'#ffffff',v:'#2f3a40',gl:1,tie:1},{h:'#3f8fc6',v:'#6b7781',folder:1},{h:'#ffffff',v:'#1f2c4d',tie:1,badge:1}
+];
+function MGR_ART(i){
+  var m=MGR_LOOK[i],s='';
+  s+='<path d="M22 90C22 66 40 60 60 60C80 60 98 66 98 90Z" fill="'+m.v+'"/>';
+  if(m.v==='#f26a1b'||m.vest)s+='<path d="M40 64L44 90M80 64L76 90" stroke="'+(m.vest?'#f26a1b':'#e9eef0')+'" stroke-width="'+(m.vest?7:3)+'"/>'+(m.vest?'<path d="M37 70h10M73 70h10" stroke="#e9eef0" stroke-width="2"/>':'<path d="M28 78h64" stroke="#e9eef0" stroke-width="3"/>');
+  if(m.tie)s+='<path d="M60 62l-4 4 4 18 4-18z" fill="#c0392b"/><path d="M52 60l8 6 8-6" fill="none" stroke="#ffffff" stroke-width="3"/>';
+  if(m.badge)s+='<circle cx="76" cy="74" r="4" fill="#e8b21c"/>';
+  s+='<rect x="54" y="50" width="12" height="12" fill="#e2b48e"/><circle cx="60" cy="42" r="15" fill="#f1c7a3"/>';
+  s+='<circle cx="54" cy="43" r="1.8" fill="#2f3a40"/><circle cx="66" cy="43" r="1.8" fill="#2f3a40"/><path d="M54 50c3 3 9 3 12 0" fill="none" stroke="#a8452f" stroke-width="1.8" stroke-linecap="round"/>';
+  if(m.gl)s+='<g fill="none" stroke="#2f3a40" stroke-width="1.5"><circle cx="54" cy="43" r="4.5"/><circle cx="66" cy="43" r="4.5"/><path d="M58.5 43h3"/></g>';
+  s+='<path d="M43 37C43 20 77 20 77 37Z" fill="'+m.h+'"/><rect x="40" y="35" width="40" height="5" rx="2.5" fill="'+m.h+'"/><path d="M43 37C43 20 77 20 77 37" fill="none" stroke="rgba(0,0,0,.15)" stroke-width="1.5"/><rect x="58" y="22" width="4" height="13" rx="2" fill="rgba(0,0,0,.08)"/>';
+  if(m.roll)s+='<rect x="84" y="56" width="8" height="30" rx="4" fill="#e8f1fb" transform="rotate(20 88 71)"/><rect x="84" y="56" width="8" height="6" rx="3" fill="#2f6fb3" transform="rotate(20 88 71)"/>';
+  if(m.folder)s+='<rect x="78" y="64" width="22" height="18" rx="2" fill="#f2c230"/><rect x="78" y="64" width="22" height="4" fill="#d9a400"/>';
+  return svgArt(s);
+}
+
 /* ---------- build ---------- */
 var C=[],G=[];
 var list=$('list');
@@ -384,15 +501,15 @@ B.forEach(function(b,i){
 var DCOL=['#f2c75c','#5bbdb6','#e9836b','#f0a24a','#efe0bd','#e9e4da','#b596e0','#62c0ea'];
 function addRow(parent,title,desc,cost,kind,i,k){
   var el=document.createElement('div');el.className='row';
-  el.innerHTML='<span class="ava" style="--c:'+DCOL[i]+'">'+(kind==='mgr'?'<svg viewBox="0 0 24 24" aria-hidden="true">'+B[i].icon+'</svg>':'×3')+'</span>'+
+  el.innerHTML='<span class="ava" style="--c:'+DCOL[i]+'">'+(kind==='mgr'?MGR_ART(i):TECH_ART[i][k])+'</span>'+
     '<div class="row-t"><b>'+title+'</b><span>'+desc+'</span></div><button type="button" class="pay" id="g-'+kind+'-'+i+'-'+k+'"><span class="coin"></span></button>';
   parent.appendChild(el);
   var g={el:el,btn:el.lastElementChild,kind:kind,i:i,k:k,cost:cost};g.lbl=g.btn.firstElementChild;
   g.btn.addEventListener('click',function(){
     var s=S.b[i];if(!s.lvl||bought(g)||S.money<cost)return;
     S.money-=cost;
-    if(kind==='mgr'){s.mgr=true;s.run=true;toast('Нанят: '+title)}else{s.up[k]=true;toast(title+': доход ×3')}
-    bump(g.btn,'pop');SFX.hire();
+    if(kind==='mgr'){s.mgr=true;s.run=true}else s.up[k]=true;
+    bump(g.btn,'pop');SFX.hire();showGift(kind,i,k,title);
   });
   G.push(g);
 }
@@ -422,10 +539,13 @@ function twoStep(id,fn){
 }
 twoStep('prestige',function(){
   var t=repTotal();if(t<=S.rep)return;
-  var m=S.mode,mu=S.mute,tu=S.tut;S=fresh(t,S.life);S.mode=m;S.mute=mu;S.tut=tu;save();
+  var m=S.mode,mu=S.mute,tu=S.tut,th=S.theme;S=fresh(t,S.life);S.mode=m;S.mute=mu;S.tut=tu;S.theme=th;save();
   toast('Новый трест открыт. Репутация: '+t);SFX.win();
 });
-twoStep('wipe',function(){var mu=S.mute;S=fresh();S.mute=mu;save()});
+twoStep('wipe',function(){var mu=S.mute,th=S.theme;S=fresh();S.mute=mu;S.theme=th;save()});
+['auto','light','dark'].forEach(function(t){$('th-'+t).addEventListener('click',function(){S.theme=t;applyTheme();save()})});
+$('gift-ok').addEventListener('click',function(){$('gift').hidden=true});
+$('gift').addEventListener('click',function(e){if(e.target===$('gift'))$('gift').hidden=true});
 $('hint-x').addEventListener('click',function(){S.tut=1;tutor()});
 $('tut-on').addEventListener('click',function(){S.tut=0;tutShown=false;toast('Подсказки включены');tutor()});
 $('snd').addEventListener('click',function(){S.mute=!S.mute;if(!S.mute)SFX.tap()});
@@ -474,6 +594,7 @@ function render(){
     T(pb,armed.prestige?'Нажмите ещё раз, чтобы закрыть трест':gain<1?'Пока рано':'Открыть новый трест: +'+gain+' к репутации');
     var need=REP_K*Math.pow(tot+1,2)-S.life;
     T($('prestige-note'),'До следующего очка репутации осталось заработать '+fmt(Math.max(0,need))+' ₽.');
+    ['auto','light','dark'].forEach(function(t){var b=$('th-'+t),v=String(S.theme===t);if(b._p!==v){b._p=v;b.setAttribute('aria-pressed',v)}});
     T($('wipe'),armed.wipe?'Нажмите ещё раз: прогресс исчезнет навсегда':'Стереть весь прогресс');
   }
 }
@@ -522,7 +643,7 @@ function sizeCanvas(){
   for(var b in BEHIND){var f=L[BEHIND[b]],wb=SPR[b].w*u;L[b]={x:Math.round(f.x+f.w/2-wb/2),w:wb}}
 }
 function isDark(){
-  var a=document.documentElement.getAttribute('data-theme');if(a)return a==='dark';
+  var a=document.documentElement.getAttribute('data-scheme')||document.documentElement.getAttribute('data-theme');if(a)return a==='dark';
   return !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
 }
 var _hc={};
@@ -662,6 +783,7 @@ function draw(now,fdt){
   R(K('#aeb8bb'),0,gy,CW,3);R(K('#474f55'),0,gy+3,CW,GROUND-3);
   for(k=4;k<CW;k+=16)R(K('#e8dfb8'),k,gy+8,8,1);
   if(!RM)for(k=0;k<2;k++)truck(((t*26+k*210)%(CW+70))-35,gy+GROUND-1,now);
+  drawWorkers(gy,fdt);
 
   for(k=bursts.length-1;k>=0;k--)if(now>=bursts[k].t){
     var bb=bursts.splice(k,1)[0],col=FW[Math.floor(Math.random()*FW.length)];
@@ -710,6 +832,64 @@ var SFX={
 var toastT=0;
 function toast(txt){var el=$('toast');el.textContent=txt;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){el.hidden=true},2600)}
 function bump(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+
+/* ---------- picture on purchase ---------- */
+function showGift(kind,i,k,title){
+  $('gift-art').innerHTML=kind==='mgr'?MGR_ART(i):TECH_ART[i][k];
+  T($('gift-k'),kind==='mgr'?'Новый руководитель':'Новая технология');
+  T($('gift-t'),title);
+  T($('gift-d'),kind==='mgr'?'Теперь «'+B[i].name+'» работает без вас, даже когда игра закрыта.':TECH_TXT[i][k]+' Доход «'+B[i].name+'» ×3.');
+  var g=$('gift');g.hidden=true;void g.offsetWidth;g.hidden=false;
+  celebrate(i);
+}
+
+/* ---------- theme ---------- */
+var TC={light:'#e7ebec',dark:'#11181d'};
+function applyTheme(){
+  var t=S.theme,r=document.documentElement,forced=t==='light'||t==='dark';
+  if(forced)r.setAttribute('data-scheme',t);else r.removeAttribute('data-scheme');
+  document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){if(m._o===undefined)m._o=m.content;m.content=forced?TC[t]:m._o});
+}
+
+/* ---------- workers on site ---------- */
+var WK=[],HEL=['#f2c230','#f28c28','#ffffff','#e5483b','#3f8fc6'];
+function spot(i){var o=L[i];return o.x+3+Math.random()*Math.max(1,o.w-6)}
+function newWorker(i){return {i:i,x:spot(i),tx:spot(i),v:12+Math.random()*16,wait:Math.random()*1.5,ph:Math.random()*6,dir:1,work:0,
+  hel:HEL[Math.floor(Math.random()*HEL.length)],carry:Math.random()<.4?(Math.random()<.5?1:2):0}}
+/* one worker on every open line, one more while it is building, one more from 25 crews */
+function syncWorkers(){
+  if(!L.length)return;
+  for(var i=0;i<B.length;i++){
+    var s=S.b[i],want=s.lvl?1+((s.run||s.mgr)?1:0)+(s.lvl>=25?1:0):0;
+    var have=WK.filter(function(w){return w.i===i});
+    while(have.length<want&&WK.length<18){var w=newWorker(i);WK.push(w);have.push(w)}
+    while(have.length>want){WK.splice(WK.indexOf(have.pop()),1)}
+  }
+}
+function drawWorkers(gy,dt){
+  for(var k=0;k<WK.length;k++){
+    var w=WK[k],o=L[w.i];if(!o)continue;
+    if(w.x<o.x-3||w.x>o.x+o.w+3){w.x=spot(w.i);w.tx=spot(w.i)}
+    if(!RM){
+      if(w.wait>0){w.wait-=dt;w.work+=dt}
+      else{
+        var d=w.tx-w.x;
+        if(Math.abs(d)<.6){w.wait=.5+Math.random()*2.2;w.work=0;w.tx=spot(w.i)}
+        else{w.dir=d>0?1:-1;w.x+=w.dir*Math.min(Math.abs(d),w.v*dt);w.ph+=dt*w.v*.55}
+      }
+    }
+    worker(w,gy);
+  }
+}
+function worker(w,gy){
+  var x=Math.round(w.x*2)/2,fy=gy+2.5,walk=!RM&&w.wait<=0,sw=walk?Math.sin(w.ph)*1.3:0,dir=w.dir;
+  R(K('#2f3a40'),x-1.6+sw*.5,fy-3,1.2,3);R(K('#2f3a40'),x+.4-sw*.5,fy-3,1.2,3);
+  R(K('#f26a1b'),x-1.9,fy-7.2,3.8,4.4);R('#e9eef0',x-1.9,fy-5.5,3.8,.7);
+  R(K('#f1c7a3'),x-1.1,fy-9.3,2.2,2.2);R(K(w.hel),x-1.6,fy-10.3,3.2,1.3);R(K(w.hel),dir>0?x+.6:x-2.4,fy-9.2,1.8,.5);
+  if(w.carry===1)R(K('#a0703a'),x-4.5,fy-11.6,9,1.1);
+  else if(w.carry===2){R(K('#8d9aa1'),x+dir*2.2-1,fy-5.2,2.2,2.2);R(K('#59636a'),x+dir*2.2-1,fy-5.6,2.2,.5)}
+  else if(!walk&&!RM){var up=Math.sin(w.work*9)>0;R(K('#f26a1b'),dir>0?x+1.9:x-2.9,fy-(up?9:6.8),1,2.4);if(up)R(K('#59636a'),dir>0?x+1.4:x-3.4,fy-9.8,2,1)}
+}
 
 /* ---------- first steps ---------- */
 /* The hint is derived from the state of the game, so it can never get out of step with what the player has done. */
@@ -761,10 +941,12 @@ function frame(){
   render();draw(now,Math.min(.05,dt));
   if(++ticks%20===0)dotCheck();
   if(ticks%6===0)tutor();
+  if(ticks%30===0)syncWorkers();
   requestAnimationFrame(frame);
 }
 function start(data){
   S=load(data);last=S.ts||Date.now();
+  applyTheme();
   P0=isDark()?.6:.12;
   sizeCanvas();
   if(window.ResizeObserver)new ResizeObserver(sizeCanvas).observe(cv);else window.addEventListener('resize',sizeCanvas);
